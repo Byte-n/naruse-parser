@@ -7,7 +7,7 @@
   "type": "module",
   "name": "naruse-parser",
   "description": "只有18kb的一个js编译器+js解释器",
-  "version": "0.0.6",
+  "version": "0.0.1",
   "main": "index.js",
   "directories": {
     "test": "test"
