@@ -7,7 +7,7 @@ gzip后只有18kb，基于 TypeScript 编写的 JavaScript 解释器，运行于
 解释器是fork于[jsjs](https://github.com/bramblex/jsjs)。
 
 ## 使用场景
-+  最初的目的是为了内部产品线的热更新组件，配合`naruse`框架在不同的平台进行热更新。
++  最初的目的是为了以最小体积在内部产品线的热更新组件，配合`naruse`框架在不同的平台进行热更新。
 
 ## 安装
 
