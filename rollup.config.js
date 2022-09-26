@@ -7,13 +7,19 @@ const customResolver = nodeResolve({ extensions: ['.mjs', '.js', '.jsx', '.json'
 
 export default {
     input: './core/index.ts',
-    output: {
-        file: './dev.js',
-        format: 'es',
-    },
+    output: [
+        {
+            file: './dev.esm.js',
+            format: 'es',
+        },
+        {
+            file: './dev.cjs.js',
+            format: 'cjs',
+        }
+    ],
     plugins: [
         typescript(),
         alias({ customResolver }),
-        uglify({ mangle: {  toplevel: true}, compress: { toplevel: true } }),
+        // uglify({ mangle: {  toplevel: true}, compress: { toplevel: true } }),
     ],
 };

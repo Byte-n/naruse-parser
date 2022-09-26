@@ -71,6 +71,10 @@ interface Options {
 - [ ] async/await
   - [ ] Async generator functions 不支持
 
+## 进一步优化速度与体积
+- [ ] 热更新只传输 ast
+- [ ] ast 压缩传输
+- [ ] 加速ast解析
 
 ## License
 Mozilla Public License Version 2.0
