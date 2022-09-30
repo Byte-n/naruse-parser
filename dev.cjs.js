@@ -43,68 +43,68 @@ function __spreadArray(to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 }
 
-const Identifier = "Identifier";
-const Literal = "Literal";
-const Program = "Program";
-const Property = "Property";
-const FunctionDeclaration = "FunctionDeclaration";
-const FunctionExpression = "FunctionExpression";
-const ExpressionStatement = "ExpressionStatement";
-const ObjectPattern = "ObjectPattern";
-const ArrayPattern = "ArrayPattern";
-const AssignmentPattern = "AssignmentPattern";
-const ObjectExpression = "ObjectExpression";
-const ArrayExpression = "ArrayExpression";
-const AssignmentExpression = "AssignmentExpression";
-const MemberExpression = "MemberExpression";
-const RestElement = "RestElement";
-const SpreadElement = "SpreadElement";
-const DoWhileStatement = "DoWhileStatement";
-const DebuggerStatement = "DebuggerStatement";
-const ContinueStatement = "ContinueStatement";
-const BreakStatement = "BreakStatement";
-const CallExpression = "CallExpression";
-const YieldExpression = "YieldExpression";
-const ImportBatchSpecifier = "ImportBatchSpecifier";
-const ImportSpecifier = "ImportSpecifier";
-const ImportDeclaration = "ImportDeclaration";
-const ExportSpecifier = "ExportSpecifier";
-const ExportBatchSpecifier = "ExportBatchSpecifier";
-const ExportDeclaration = "ExportDeclaration";
-const ClassDeclaration = "ClassDeclaration";
-const ClassExpression = "ClassExpression";
-const ClassBody = "ClassBody";
-const TemplateElement = "TemplateElement";
-const ArrowFunctionExpression = "ArrowFunctionExpression";
-const TemplateLiteral = "TemplateLiteral";
-const MethodDefinition = "MethodDefinition";
-const SequenceExpression = "SequenceExpression";
-const ParenthesizedExpression = "ParenthesizedExpression";
-const NewExpression = "NewExpression";
-const UpdateExpression = "UpdateExpression";
-const BinaryExpression = "BinaryExpression";
-const LogicalExpression = "LogicalExpression";
-const UnaryExpression = "UnaryExpression";
-const VariableDeclaration = "VariableDeclaration";
-const IfStatement = "IfStatement";
-const ReturnStatement = "ReturnStatement";
-const SwitchCase = "SwitchCase";
-const SwitchStatement = "SwitchStatement";
-const ThrowStatement = "ThrowStatement";
-const TaggedTemplateExpression = "TaggedTemplateExpression";
-const TryStatement = "TryStatement";
-const CatchClause = "CatchClause";
-const WhileStatement = "WhileStatement";
-const EmptyStatement = "EmptyStatement";
-const LabeledStatement = "LabeledStatement";
-const BlockStatement = "BlockStatement";
-const ForInStatement = "ForInStatement";
-const ForOfStatement = "ForOfStatement";
-const ForStatement = "ForStatement";
-const VariableDeclarator = "VariableDeclarator";
-const ThisExpression = "ThisExpression";
-const ConditionalExpression = "ConditionalExpression";
-const ImportExpression = "ImportExpression";
+var Identifier = "Identifier";
+var Literal = "Literal";
+var Program = "Program";
+var Property = "Property";
+var FunctionDeclaration = "FunctionDeclaration";
+var FunctionExpression = "FunctionExpression";
+var ExpressionStatement = "ExpressionStatement";
+var ObjectPattern = "ObjectPattern";
+var ArrayPattern = "ArrayPattern";
+var AssignmentPattern = "AssignmentPattern";
+var ObjectExpression = "ObjectExpression";
+var ArrayExpression = "ArrayExpression";
+var AssignmentExpression = "AssignmentExpression";
+var MemberExpression = "MemberExpression";
+var RestElement = "RestElement";
+var SpreadElement = "SpreadElement";
+var DoWhileStatement = "DoWhileStatement";
+var DebuggerStatement = "DebuggerStatement";
+var ContinueStatement = "ContinueStatement";
+var BreakStatement = "BreakStatement";
+var CallExpression = "CallExpression";
+var YieldExpression = "YieldExpression";
+var ImportBatchSpecifier = "ImportBatchSpecifier";
+var ImportSpecifier = "ImportSpecifier";
+var ImportDeclaration = "ImportDeclaration";
+var ExportSpecifier = "ExportSpecifier";
+var ExportBatchSpecifier = "ExportBatchSpecifier";
+var ExportDeclaration = "ExportDeclaration";
+var ClassDeclaration = "ClassDeclaration";
+var ClassExpression = "ClassExpression";
+var ClassBody = "ClassBody";
+var TemplateElement = "TemplateElement";
+var ArrowFunctionExpression = "ArrowFunctionExpression";
+var TemplateLiteral = "TemplateLiteral";
+var MethodDefinition = "MethodDefinition";
+var SequenceExpression = "SequenceExpression";
+var ParenthesizedExpression = "ParenthesizedExpression";
+var NewExpression = "NewExpression";
+var UpdateExpression = "UpdateExpression";
+var BinaryExpression = "BinaryExpression";
+var LogicalExpression = "LogicalExpression";
+var UnaryExpression = "UnaryExpression";
+var VariableDeclaration = "VariableDeclaration";
+var IfStatement = "IfStatement";
+var ReturnStatement = "ReturnStatement";
+var SwitchCase = "SwitchCase";
+var SwitchStatement = "SwitchStatement";
+var ThrowStatement = "ThrowStatement";
+var TaggedTemplateExpression = "TaggedTemplateExpression";
+var TryStatement = "TryStatement";
+var CatchClause = "CatchClause";
+var WhileStatement = "WhileStatement";
+var EmptyStatement = "EmptyStatement";
+var LabeledStatement = "LabeledStatement";
+var BlockStatement = "BlockStatement";
+var ForInStatement = "ForInStatement";
+var ForOfStatement = "ForOfStatement";
+var ForStatement = "ForStatement";
+var VariableDeclarator = "VariableDeclarator";
+var ThisExpression = "ThisExpression";
+var ConditionalExpression = "ConditionalExpression";
+var ImportExpression = "ImportExpression";
 
 var EvaluateError = /** @class */ (function (_super) {
     __extends(EvaluateError, _super);
@@ -981,7 +981,7 @@ var evaluate = function (node, scope, runner) {
 
 // this module is clone from acorn@0.12.0 with some modifications
 
-const acorn = {};
+var acorn = {};
 acorn.version = "0.12.x";
 
 // The main exported interface (under `self.acorn` when in the
@@ -1665,7 +1665,7 @@ for (var kw in keywordTypes) acorn.tokTypes["_" + kw] = keywordTypes[kw];
 
 function makePredicate(words) {
     words = words.split(" ");
-    return (str) => words.includes(str);
+    return function (str) { return words.includes(str) };
 }
 
 // The ECMAScript 3 reserved word list.

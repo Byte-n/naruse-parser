@@ -63,7 +63,7 @@ import {
 } from '../expressionType/index.js'
 // this module is clone from acorn@0.12.0 with some modifications
 
-const acorn = {};
+export var acorn = {};
 acorn.version = "0.12.x";
 
 // The main exported interface (under `self.acorn` when in the
@@ -747,7 +747,7 @@ for (var kw in keywordTypes) acorn.tokTypes["_" + kw] = keywordTypes[kw];
 
 function makePredicate(words) {
     words = words.split(" ");
-    return (str) => words.includes(str);
+    return function (str) { return words.includes(str) };
 }
 
 // The ECMAScript 3 reserved word list.

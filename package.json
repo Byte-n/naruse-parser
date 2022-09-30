@@ -4,10 +4,10 @@
     "build": "rollup -c ./rollup.config.js && mocha ./test/*",
     "test": "mocha ./test/*"
   },
-  "type": "module",
   "name": "naruse-parser",
   "description": "只有18kb的一个js编译器+js解释器",
-  "version": "0.0.1",
+  "version": "0.0.3",
+  "type": "module",
   "main": "dev.cjs.js",
   "module": "dev.esm.js",
   "directories": {
