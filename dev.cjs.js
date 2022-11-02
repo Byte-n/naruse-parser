@@ -4208,5 +4208,5 @@ var run = function (code, injectObject) {
     return runner.run(code, injectObject);
 };
 
-exports["default"] = run;
+exports.default = run;
 exports.run = run;
