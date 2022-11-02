@@ -10,7 +10,7 @@ export class ScopeVar {
         this.kind = kind;
     }
     $set(value: any) {
-        if (this.value === 'const') {
+        if (this.kind === 'const') {
             return false;
         }
         this.value = value;
