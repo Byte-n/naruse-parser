@@ -7,9 +7,10 @@ gzip后只有18kb，基于 TypeScript 编写的 JavaScript 解释器，运行于
 解释器是fork于[jsjs](https://github.com/bramblex/jsjs)。
 
 ## 使用场景
-+  热更新产品线。
-+  希望能够安全的运行某些JS代码。
++  某些限制动态执行JS代码的地方热更新产品。
++  希望能够安全的运行某些JS代码。(推荐配合Proxy使用，能够完全沙箱隔离)
 +  学习研究使用。
++  ES5 环境不需要编译直接执行 ES6 代码。（部分支持）
 
 ## 安装
 
@@ -79,7 +80,9 @@ interface Options {
 - [ ] 加速ast解析
 
 ## History
-#### 0.0.4
+#### 0.0.6
++ #CHORE: update readme
+#### 0.0.5
 + #FIX:  "const" string cannot be changed
 + #FEAT: support pnpm
 

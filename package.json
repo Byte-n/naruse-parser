@@ -6,7 +6,11 @@
   },
   "name": "naruse-parser",
   "description": "只有18kb的一个js编译器+js解释器",
-  "version": "0.0.4",
+  "version": "0.0.6",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/narusejs/naruse-parser"
+  },
   "type": "module",
   "main": "dev.cjs.js",
   "module": "dev.esm.js",
