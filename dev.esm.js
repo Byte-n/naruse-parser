@@ -169,7 +169,7 @@ var ScopeVar = /** @class */ (function () {
         this.kind = kind;
     }
     ScopeVar.prototype.$set = function (value) {
-        if (this.value === 'const') {
+        if (this.kind === 'const') {
             return false;
         }
         this.value = value;

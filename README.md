@@ -7,7 +7,9 @@ gzip后只有18kb，基于 TypeScript 编写的 JavaScript 解释器，运行于
 解释器是fork于[jsjs](https://github.com/bramblex/jsjs)。
 
 ## 使用场景
-+  最初的目的是为了以最小体积在内部产品线的热更新组件，配合`naruse`框架在不同的平台进行热更新。
++  热更新产品线。
++  希望能够安全的运行某些JS代码。
++  学习研究使用。
 
 ## 安装
 
@@ -75,6 +77,11 @@ interface Options {
 - [ ] 热更新只传输 ast
 - [ ] ast 压缩传输
 - [ ] 加速ast解析
+
+## History
+#### 0.0.4
++ #FIX:  "const" string cannot be changed
++ #FEAT: support pnpm
 
 ## License
 Mozilla Public License Version 2.0
