@@ -5,7 +5,8 @@ import { uglify } from 'rollup-plugin-uglify';
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 const customResolver = nodeResolve({ extensions: ['.mjs', '.js', '.jsx', '.json', '.sass', '.scss', '.css'] });
 
-export default {
+
+const interpreter = {
     input: './core/index.ts',
     output: [
         {
@@ -15,6 +16,10 @@ export default {
         {
             file: './dev.cjs.js',
             format: 'cjs',
+        },
+        {
+            file: './index.js',
+            format: 'es',
         }
     ],
     plugins: [
@@ -23,3 +28,24 @@ export default {
         // uglify({ mangle: {  toplevel: true}, compress: { toplevel: true } }),
     ],
 };
+
+const parser = {
+    input: './acorn/index.ts',
+    output: [
+        {
+            file: './acorn.esm.js',
+            format: 'es',
+        },
+        {
+            file: './acorn.cjs.js',
+            format: 'cjs',
+        }
+    ],
+    plugins: [
+        typescript(),
+        alias({ customResolver }),
+    ],
+}
+
+
+export default  [interpreter, parser];
