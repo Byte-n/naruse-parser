@@ -139,14 +139,10 @@ const evaluate_map: baseMap = {
             node.test ? evaluate(node.test, new_scope) : true;
             node.update ? evaluate(node.update, new_scope) : void (0)
         ) {
-            const result = evaluate({ type: 'BlockStatement', body: node.body }, new_scope);
-            if (result === BREAK_SIGNAL) {
-                break;
-            } else if (result === CONTINUE_SIGNAL) {
-                continue;
-            } else if (result === RETURN_SIGNAL) {
-                return result;
-            }
+            const result = evaluate(node.body, new_scope);
+            if (isReturnResult(result)) return;
+            else if (isContinueResult(result)) continue;
+            else if (isBreakResult(result)) break;
         }
     },
     [FunctionDeclaration]: function (node: estree.FunctionDeclaration, scope: Scope) {
@@ -179,7 +175,7 @@ const evaluate_map: baseMap = {
                 }
             }
         }, scope)
-        
+
     },
     [ArrayPattern]: function (node: estree.ArrayPattern, scope: Scope, kind?: Kind, value?: any[]) {
         const { elements } = node;
@@ -656,9 +652,6 @@ const evaluate_map: baseMap = {
         return YIELD_SIGNAL;
     }
 };
-
-
-
 
 const _evaluate = (node: any, scope: Scope) => {
     const func = evaluate_map[node.type];
