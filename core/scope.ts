@@ -11,7 +11,7 @@ export class ScopeVar {
     }
     $set(value: any) {
         if (this.kind === 'const') {
-            return false;
+            throw new Error('const value can not be changed');
         }
         this.value = value;
         return true;
