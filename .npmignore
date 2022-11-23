@@ -5,3 +5,9 @@ template/test.js
 dist
 .tea
 demo
+test
+core
+expressionType
+acorn
+pnpm-lock.yaml
+index.old.js
