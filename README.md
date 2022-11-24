@@ -81,9 +81,9 @@ interface Options {
 
 ## History
 #### 0.0.7
-#FEAT: const 重新赋值改为报错
-#FEAT: acorn 切换为TS
-#FIX: 修复FOR循环无法使用
++ #FEAT: const 重新赋值改为报错
++ #FEAT: acorn 切换为TS
++ #FIX: 修复FOR循环无法使用
 
 #### 0.0.6
 + #CHORE: update readme
