@@ -80,6 +80,8 @@ interface Options {
 - [ ] 加速ast解析
 
 ## History
+#### 0.0.8
++ #CHORE: 更换入口文件位置与新增TS提示
 #### 0.0.7
 + #FEAT: const 重新赋值改为报错
 + #FEAT: acorn 切换为TS
