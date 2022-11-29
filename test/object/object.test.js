@@ -1,6 +1,6 @@
 import {
     run
-} from '../../index.js';
+} from '../../dist/dev.esm.js';
 import {
     describe,
     it

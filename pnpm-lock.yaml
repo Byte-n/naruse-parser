@@ -9,6 +9,7 @@ specifiers:
   chai-properties: 1.4.0
   mocha: ^10.0.0
   rollup: 3.2.5
+  rollup-plugin-dts: ^5.0.0
   rollup-plugin-uglify: ^6.0.4
   tslib: ^2.4.0
   typescript: ^4.8.3
@@ -22,21 +23,127 @@ devDependencies:
   chai-properties: registry.npmmirror.com/chai-properties/1.4.0_chai@4.3.6
   mocha: registry.npmmirror.com/mocha/10.1.0
   rollup: registry.npmmirror.com/rollup/3.2.5
+  rollup-plugin-dts: 5.0.0_oa2candk7eitu7usnsurwiyuuu
   rollup-plugin-uglify: registry.npmmirror.com/rollup-plugin-uglify/6.0.4_rollup@3.2.5
   tslib: registry.npmmirror.com/tslib/2.4.1
   typescript: registry.npmmirror.com/typescript/4.8.4
 
 packages:
 
+  /@babel/code-frame/7.18.6:
+    resolution: {integrity: sha512-TDCmlK5eOvH+eH7cdAFlNXeVJqWIQ7gW9tY1GJIpUtFb6CmjVyq2VM3u71bOyR8CRihcCgMUYoDNyLXao3+70Q==}
+    engines: {node: '>=6.9.0'}
+    requiresBuild: true
+    dependencies:
+      '@babel/highlight': 7.18.6
+    dev: true
+    optional: true
+
+  /@babel/helper-validator-identifier/7.19.1:
+    resolution: {integrity: sha512-awrNfaMtnHUr653GgGEs++LlAvW6w+DcPrOliSMXWCKo597CwL5Acf/wWdNkf/tfEQE3mjkeD1YOVZOUV/od1w==}
+    engines: {node: '>=6.9.0'}
+    dev: true
+    optional: true
+
+  /@babel/highlight/7.18.6:
+    resolution: {integrity: sha512-u7stbOuYjaPezCuLj29hNW1v64M2Md2qupEKP1fHc7WdOA3DgLh37suiSrZYY7haUB7iBeQZ9P1uiRF359do3g==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      '@babel/helper-validator-identifier': 7.19.1
+      chalk: 2.4.2
+      js-tokens: 4.0.0
+    dev: true
+    optional: true
+
   /@types/estree/1.0.0:
     resolution: {integrity: sha512-WulqXMDUTYAXCjZnk6JtIHPigp55cVtDgDrO2gHRwhyJto21+1zbVCtOYB2L1F9w4qCQ0rOGWBnBe0FNTiEJIQ==}
     dev: true
+
+  /ansi-styles/3.2.1:
+    resolution: {integrity: sha512-VT0ZI6kZRdTh8YyJw3SMbYm/u+NqfsAxEpWO0Pf9sq8/e94WxxOpPKx9FR1FlyCtOVDNOQ+8ntlqFxiRc+r5qA==}
+    engines: {node: '>=4'}
+    dependencies:
+      color-convert: 1.9.3
+    dev: true
+    optional: true
+
+  /chalk/2.4.2:
+    resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
+    engines: {node: '>=4'}
+    dependencies:
+      ansi-styles: 3.2.1
+      escape-string-regexp: 1.0.5
+      supports-color: 5.5.0
+    dev: true
+    optional: true
+
+  /color-convert/1.9.3:
+    resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
+    dependencies:
+      color-name: 1.1.3
+    dev: true
+    optional: true
+
+  /color-name/1.1.3:
+    resolution: {integrity: sha512-72fSenhMw2HZMTVHeCA9KCmpEIbzWiQsjN+BHcBbS9vr1mtt+vJjPdksIBNUmKAW8TFUDPJK5SUU3QhE9NEXDw==}
+    dev: true
+    optional: true
+
+  /escape-string-regexp/1.0.5:
+    resolution: {integrity: sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==}
+    engines: {node: '>=0.8.0'}
+    dev: true
+    optional: true
 
   /fsevents/2.3.2:
     resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
+    dev: true
+    optional: true
+
+  /has-flag/3.0.0:
+    resolution: {integrity: sha512-sKJf1+ceQBr4SMkvQnBDNDtf4TXpVhVGateu0t918bl30FnbE2m4vNLX+VWe/dpjlb+HugGYzW7uQXH98HPEYw==}
+    engines: {node: '>=4'}
+    dev: true
+    optional: true
+
+  /js-tokens/4.0.0:
+    resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
+    dev: true
+    optional: true
+
+  /magic-string/0.26.7:
+    resolution: {integrity: sha512-hX9XH3ziStPoPhJxLq1syWuZMxbDvGNbVchfrdCtanC7D13888bMFow61x8axrx+GfHLtVeAx2kxL7tTGRl+Ow==}
+    engines: {node: '>=12'}
+    dependencies:
+      sourcemap-codec: 1.4.8
+    dev: true
+
+  /rollup-plugin-dts/5.0.0_oa2candk7eitu7usnsurwiyuuu:
+    resolution: {integrity: sha512-OO8ayCvuJCKaQSShyVTARxGurVVk4ulzbuvz+0zFd1f93vlnWFU5pBMT7HFeS6uj7MvvZLx4kUAarGATSU1+Ng==}
+    engines: {node: '>=v14'}
+    peerDependencies:
+      rollup: ^3.0.0
+      typescript: ^4.1
+    dependencies:
+      magic-string: 0.26.7
+      rollup: registry.npmmirror.com/rollup/3.2.5
+      typescript: registry.npmmirror.com/typescript/4.8.4
+    optionalDependencies:
+      '@babel/code-frame': 7.18.6
+    dev: true
+
+  /sourcemap-codec/1.4.8:
+    resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
+    dev: true
+
+  /supports-color/5.5.0:
+    resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
+    engines: {node: '>=4'}
+    dependencies:
+      has-flag: 3.0.0
     dev: true
     optional: true
 

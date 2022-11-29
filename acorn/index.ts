@@ -180,7 +180,7 @@ function setOptions(opts: { [x: string]: any; }) {
 // into.
 
 var getLineInfo = function (input: string, offset: number) {
-    for (var line = 1, cur = 0;;) {
+    for (var line = 1, cur = 0; ;) {
         lineBreak.lastIndex = cur;
         var match = lineBreak.exec(input);
         if (match && match.index < offset) {
@@ -373,8 +373,8 @@ var empty: never[] = [];
 // make them recognizeable when debugging.
 
 var _num = {
-        type: "num"
-    },
+    type: "num"
+},
     _regexp = {
         type: "regexp"
     },
@@ -382,8 +382,8 @@ var _num = {
         type: "string"
     };
 var _name = {
-        type: "name"
-    },
+    type: "name"
+},
     _eof = {
         type: "eof"
     };
@@ -402,8 +402,8 @@ var _name = {
 // continue jumps to that label.
 
 var _break = {
-        keyword: "break"
-    },
+    keyword: "break"
+},
     _case = {
         keyword: "case",
         beforeExpr: true
@@ -412,8 +412,8 @@ var _break = {
         keyword: "catch"
     };
 var _continue = {
-        keyword: "continue"
-    },
+    keyword: "continue"
+},
     _debugger = {
         keyword: "debugger"
     },
@@ -421,16 +421,16 @@ var _continue = {
         keyword: "default"
     };
 var _do = {
-        keyword: "do",
-        isLoop: true
-    },
+    keyword: "do",
+    isLoop: true
+},
     _else = {
         keyword: "else",
         beforeExpr: true
     };
 var _finally = {
-        keyword: "finally"
-    },
+    keyword: "finally"
+},
     _for = {
         keyword: "for",
         isLoop: true
@@ -439,8 +439,8 @@ var _finally = {
         keyword: "function"
     };
 var _if = {
-        keyword: "if"
-    },
+    keyword: "if"
+},
     _return = {
         keyword: "return",
         beforeExpr: true
@@ -449,9 +449,9 @@ var _if = {
         keyword: "switch"
     };
 var _throw = {
-        keyword: "throw",
-        beforeExpr: true
-    },
+    keyword: "throw",
+    beforeExpr: true
+},
     _try = {
         keyword: "try"
     },
@@ -459,15 +459,15 @@ var _throw = {
         keyword: "var"
     };
 var _let = {
-        keyword: "let"
-    },
+    keyword: "let"
+},
     _const = {
         keyword: "const"
     };
 var _while = {
-        keyword: "while",
-        isLoop: true
-    },
+    keyword: "while",
+    isLoop: true
+},
     _with = {
         keyword: "with"
     },
@@ -479,15 +479,15 @@ var _this = {
     keyword: "this"
 };
 var _class = {
-        keyword: "class"
-    },
+    keyword: "class"
+},
     _extends = {
         keyword: "extends",
         beforeExpr: true
     };
 var _export = {
-        keyword: "export"
-    },
+    keyword: "export"
+},
     _import = {
         keyword: "import"
     };
@@ -499,9 +499,9 @@ var _yield = {
 // The keywords that denote values.
 
 var _null = {
-        keyword: "null",
-        atomValue: null
-    },
+    keyword: "null",
+    atomValue: null
+},
     _true = {
         keyword: "true",
         atomValue: true
@@ -581,9 +581,9 @@ var keywordTypes = {
 // Punctuation token types. Again, the `type` property is purely for debugging.
 
 var _bracketL = {
-        type: "[",
-        beforeExpr: true
-    },
+    type: "[",
+    beforeExpr: true
+},
     _bracketR = {
         type: "]"
     },
@@ -592,8 +592,8 @@ var _bracketL = {
         beforeExpr: true
     };
 var _braceR = {
-        type: "}"
-    },
+    type: "}"
+},
     _parenL = {
         type: "(",
         beforeExpr: true
@@ -602,17 +602,17 @@ var _braceR = {
         type: ")"
     };
 var _comma = {
-        type: ",",
-        beforeExpr: true
-    },
+    type: ",",
+    beforeExpr: true
+},
     _semi = {
         type: ";",
         beforeExpr: true
     };
 var _colon = {
-        type: ":",
-        beforeExpr: true
-    },
+    type: ":",
+    beforeExpr: true
+},
     _dot = {
         type: "."
     },
@@ -621,9 +621,9 @@ var _colon = {
         beforeExpr: true
     };
 var _arrow = {
-        type: "=>",
-        beforeExpr: true
-    },
+    type: "=>",
+    beforeExpr: true
+},
     _template = {
         type: "template"
     };
@@ -632,8 +632,8 @@ var _ellipsis = {
     beforeExpr: true
 };
 var _backQuote = {
-        type: "`"
-    },
+    type: "`"
+},
     _dollarBraceL = {
         type: "${",
         beforeExpr: true
@@ -656,9 +656,9 @@ var _backQuote = {
 // in AssignmentExpression nodes.
 
 var _slash = {
-        binop: 10,
-        beforeExpr: true
-    },
+    binop: 10,
+    beforeExpr: true
+},
     _eq = {
         isAssign: true,
         beforeExpr: true
@@ -668,10 +668,10 @@ var _assign = {
     beforeExpr: true
 };
 var _incDec = {
-        postfix: true,
-        prefix: true,
-        isUpdate: true
-    },
+    postfix: true,
+    prefix: true,
+    isUpdate: true
+},
     _prefix = {
         prefix: true,
         beforeExpr: true
@@ -765,8 +765,8 @@ for (var kw in keywordTypes) acorn.tokTypes["_" + kw] = keywordTypes[kw];
 //
 // It starts by sorting the words by length.
 
-function makePredicate(words: string) {
-    const newWords: string [] = words.split(" ");
+function makePredicate(words: string | number) {
+    const newWords: string[] = String(words).split(" ");
     return function (str: string) { return newWords.includes(str) };
 }
 
@@ -888,9 +888,9 @@ function initTokenState(pos?: number) {
 // See https://github.com/mozilla/sweet.js/wiki/design
 
 var b_stat = {
-        token: "{",
-        isExpr: false
-    },
+    token: "{",
+    isExpr: false
+},
     b_expr = {
         token: "{",
         isExpr: true
@@ -900,17 +900,17 @@ var b_stat = {
         isExpr: true
     };
 var p_stat = {
-        token: "(",
-        isExpr: false
-    },
+    token: "(",
+    isExpr: false
+},
     p_expr = {
         token: "(",
         isExpr: true
     };
 var q_tmpl = {
-        token: "`",
-        isExpr: true
-    },
+    token: "`",
+    isExpr: true
+},
     f_expr = {
         token: "function",
         isExpr: true
@@ -1161,7 +1161,7 @@ function getTokenFromCode(code: any) {
         case 46: // '.'
             return readToken_dot();
 
-            // Punctuation tokens.
+        // Punctuation tokens.
         case 40:
             ++tokPos;
             return finishToken(_parenL);
@@ -1201,64 +1201,64 @@ function getTokenFromCode(code: any) {
                 return false;
             }
 
-            case 48: // '0'
-                var next = input.charCodeAt(tokPos + 1);
-                if (next === 120 || next === 88) return readRadixNumber(16); // '0x', '0X' - hex number
-                if (options.ecmaVersion >= 6) {
-                    if (next === 111 || next === 79) return readRadixNumber(8); // '0o', '0O' - octal number
-                    if (next === 98 || next === 66) return readRadixNumber(2); // '0b', '0B' - binary number
-                }
-                // Anything else beginning with a digit is an integer, octal
-                // number, or float.
-                case 49:
-                case 50:
-                case 51:
-                case 52:
-                case 53:
-                case 54:
-                case 55:
-                case 56:
-                case 57: // 1-9
-                    return readNumber(false);
+        case 48: // '0'
+            var next = input.charCodeAt(tokPos + 1);
+            if (next === 120 || next === 88) return readRadixNumber(16); // '0x', '0X' - hex number
+            if (options.ecmaVersion >= 6) {
+                if (next === 111 || next === 79) return readRadixNumber(8); // '0o', '0O' - octal number
+                if (next === 98 || next === 66) return readRadixNumber(2); // '0b', '0B' - binary number
+            }
+        // Anything else beginning with a digit is an integer, octal
+        // number, or float.
+        case 49:
+        case 50:
+        case 51:
+        case 52:
+        case 53:
+        case 54:
+        case 55:
+        case 56:
+        case 57: // 1-9
+            return readNumber(false);
 
-                    // Quotes produce strings.
-                case 34:
-                case 39: // '"', "'"
-                    return readString(code);
+        // Quotes produce strings.
+        case 34:
+        case 39: // '"', "'"
+            return readString(code);
 
-                    // Operators are parsed inline in tiny state machines. '=' (61) is
-                    // often referred to. `finishOp` simply skips the amount of
-                    // characters it is given as second argument, and returns a token
-                    // of the type given by its first argument.
+        // Operators are parsed inline in tiny state machines. '=' (61) is
+        // often referred to. `finishOp` simply skips the amount of
+        // characters it is given as second argument, and returns a token
+        // of the type given by its first argument.
 
-                case 47: // '/'
-                    return readToken_slash();
+        case 47: // '/'
+            return readToken_slash();
 
-                case 37:
-                case 42: // '%*'
-                    return readToken_mult_modulo(code);
+        case 37:
+        case 42: // '%*'
+            return readToken_mult_modulo(code);
 
-                case 124:
-                case 38: // '|&'
-                    return readToken_pipe_amp(code);
+        case 124:
+        case 38: // '|&'
+            return readToken_pipe_amp(code);
 
-                case 94: // '^'
-                    return readToken_caret();
+        case 94: // '^'
+            return readToken_caret();
 
-                case 43:
-                case 45: // '+-'
-                    return readToken_plus_min(code);
+        case 43:
+        case 45: // '+-'
+            return readToken_plus_min(code);
 
-                case 60:
-                case 62: // '<>'
-                    return readToken_lt_gt(code);
+        case 60:
+        case 62: // '<>'
+            return readToken_lt_gt(code);
 
-                case 61:
-                case 33: // '=!'
-                    return readToken_eq_excl(code);
+        case 61:
+        case 33: // '=!'
+            return readToken_eq_excl(code);
 
-                case 126: // '~'
-                    return finishOp(_prefix, 1);
+        case 126: // '~'
+            return finishOp(_prefix, 1);
     }
 
     return false;
@@ -1277,7 +1277,7 @@ function readToken() {
 
     // Identifier or keyword. '\uXXXX' sequences are allowed in
     // identifiers, so '\' also dispatches to that.
-    if (isIdentifierStart(code) || code === 92 /* '\' */ ) return readWord();
+    if (isIdentifierStart(code) || code === 92 /* '\' */) return readWord();
 
     var tok = getTokenFromCode(code);
 
@@ -1301,7 +1301,7 @@ var regexpUnicodeSupport = false;
 try {
     new RegExp("\uffff", "u");
     regexpUnicodeSupport = true;
-} catch (e) {}
+} catch (e) { }
 
 // Parse a regular expression. Some context-awareness is necessary,
 // since a '/' inside a '[]' set does not end the expression.
@@ -1309,7 +1309,7 @@ try {
 function readRegexp() {
     var content = "",
         escaped, inClass, start = tokPos;
-    for (;;) {
+    for (; ;) {
         if (tokPos >= inputLen) raise(start, "Unterminated regular expression");
         var ch = input.charAt(tokPos);
         if (newline.test(ch)) raise(start, "Unterminated regular expression");
@@ -1452,7 +1452,7 @@ function readCodePoint() {
 function readString(quote: any) {
     var out = "",
         chunkStart = ++tokPos;
-    for (;;) {
+    for (; ;) {
         if (tokPos >= inputLen) raise(tokStart, "Unterminated string constant");
         var ch = input.charCodeAt(tokPos);
         if (ch === quote) break;
@@ -1474,7 +1474,7 @@ function readString(quote: any) {
 function readTmplToken() {
     var out = "",
         chunkStart = tokPos;
-    for (;;) {
+    for (; ;) {
         if (tokPos >= inputLen) raise(tokStart, "Unterminated template");
         var ch = input.charCodeAt(tokPos);
         if (ch === 96 || ch === 36 && input.charCodeAt(tokPos + 1) === 123) { // '`', '${'
@@ -1704,7 +1704,7 @@ function storeCurrentPos() {
     return options.locations ? [tokStart, tokStartLoc] : tokStart;
 }
 
-function startNodeAt(pos: number | string []) {
+function startNodeAt(pos: number | string[]) {
     var node = new Node(),
         start = pos;
     if (options.locations) {
@@ -2021,7 +2021,7 @@ function checkPropClash(prop: { key: any; kind: string; }, propHash: { [x: strin
 // Verify that a node is an lval — something that can be assigned
 // to.
 
-function checkLVal(expr: { type: any; name: string | number; start: any; properties: string | any[]; elements: string | any[]; left: any; argument: any; }, isBinding?: boolean) {
+function checkLVal(expr: { type: any; name: string; start: any; properties: string | any[]; elements: string | any[]; left: any; argument: any; }, isBinding?: boolean) {
     switch (expr.type) {
         case Identifier:
             if (strict && (isStrictBadIdWord(expr.name) || isStrictReservedWord(expr.name)))
@@ -2079,8 +2079,8 @@ function parseTopLevel(node: { body: any[]; }) {
 }
 
 var loopLabel = {
-        kind: "loop"
-    },
+    kind: "loop"
+},
     switchLabel = {
         kind: "switch"
     };
@@ -2145,11 +2145,11 @@ function parseStatement(declaration: boolean, topLevel?: boolean | undefined) {
                 raise(tokStart, "'import' and 'export' may only appear at the top level");
             return starttype === _import ? parseImport(node) : parseExport(node);
 
-            // If the statement does not start with a statement keyword or a
-            // brace, it's an ExpressionStatement or LabeledStatement. We
-            // simply start parsing an expression, and afterwards, if the
-            // next token is a colon and the expression was a simple
-            // Identifier node, we switch to interpreting it as a label.
+        // If the statement does not start with a statement keyword or a
+        // brace, it's an ExpressionStatement or LabeledStatement. We
+        // simply start parsing an expression, and afterwards, if the
+        // next token is a colon and the expression was a simple
+        // Identifier node, we switch to interpreting it as a label.
         default:
             var maybeName = tokVal,
                 expr = parseExpression();
@@ -2451,7 +2451,7 @@ function parseForIn(node: { left: any; right: any; body: any; }, init: any) {
 function parseVar(node: { declarations: any[]; kind: any; }, noIn: boolean, kind: string) {
     node.declarations = [];
     node.kind = kind;
-    for (;;) {
+    for (; ;) {
         var decl = startNode();
         decl.id = parseBindingAtom();
         checkLVal(decl.id, true);
@@ -2739,8 +2739,8 @@ function parseParenAndDistinguishExpression() {
             exprList = [],
             first = true;
         var refShorthandDefaultPos = {
-                start: 0
-            },
+            start: 0
+        },
             spreadStart, innerParenStart;
         while (tokType !== _parenR) {
             first ? first = false : expect(_comma);

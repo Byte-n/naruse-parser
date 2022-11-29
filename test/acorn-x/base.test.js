@@ -1,4 +1,4 @@
-import { acorn } from '../../acorn.esm.js';
+import { acorn } from '../../dist/acorn.esm.js';
 import {
     describe,
     it
