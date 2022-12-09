@@ -87,4 +87,19 @@ describe('for 循环测试', () => {
         } = exports;
         expect(pcr).to.deep.equal(52);
     });
+
+    it('return 测试', () => {
+        const exports = run(`
+        const cc = () => {
+            for (let i = 0; i < 10; i++) {
+                return 123;
+            }
+        }
+        exports.pcr = cc();
+        `);
+        const {
+            pcr
+        } = exports;
+        expect(pcr).to.deep.equal(123);
+    })
 });

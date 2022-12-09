@@ -140,7 +140,7 @@ const evaluate_map: baseMap = {
             node.update ? evaluate(node.update, new_scope) : void (0)
         ) {
             const result = evaluate(node.body, new_scope);
-            if (isReturnResult(result)) return;
+            if (isReturnResult(result)) return result;
             else if (isContinueResult(result)) continue;
             else if (isBreakResult(result)) break;
         }
