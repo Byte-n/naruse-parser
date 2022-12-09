@@ -77,4 +77,19 @@ describe('while 循环测试', () => {
         } = exports;
         expect(pcr).to.deep.equal(12);
     });
+
+    it('return 测试', () => {
+        const exports = run(`
+        const cc = () => {
+            while (true) {
+                return 123;
+            }
+        }
+        exports.pcr = cc();
+        `);
+        const {
+            pcr
+        } = exports;
+        expect(pcr).to.deep.equal(123);
+    })
 });
