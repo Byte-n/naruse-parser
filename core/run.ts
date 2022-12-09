@@ -46,15 +46,23 @@ export class Runner {
     public source: string = '';
     public traceId = 0;
     public traceStack = [];
-    private mainScope: Scope = new Scope('block');
     public currentNode: any = null;
 
-    public run (code: string, injectObject: InJectObject = {}) {
+    private ast = null;
+    private mainScope: Scope = new Scope('block');
+
+    /** 错误收集中心 */
+    public onError (err: Error) {
+        // console.error(err);
+    }
+
+    public run (code: string, injectObject: InJectObject = {}, onError?: (err: Error) => void) {
         this.source = code;
+        this.onError = onError || this.onError;
         this.initScope(injectObject);
-        const ast = acorn.parse(code, { locations: true, ecmaVersion: 6 });
+        this.parserAst(code);
         try {
-            evaluate(ast, this.mainScope, this);
+            evaluate(this.ast, this.mainScope, this);
         } catch (err) {
             throw err;
         }
@@ -74,4 +82,8 @@ export class Runner {
         })
     }
 
+    public parserAst (code: string) {
+        this.ast = acorn.parse(code, { locations: true, ecmaVersion: 6 });
+        return this.ast;
+    }
 }

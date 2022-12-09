@@ -68,7 +68,7 @@ import { BREAK_SIGNAL, CONTINUE_SIGNAL, RETURN_SIGNAL, YIELD_SIGNAL, isGenerator
 import { Scope, Kind, indexGeneratorStackDecorate } from './scope';
 
 let anonymousId = 0;
-let thisRunner: { source: string, currentNode: any, traceId: number, traceStack: any[] };
+let thisRunner: { source: string, currentNode: any, traceId: number, traceStack: any[], onError?: (err: EvaluateError) => void };
 
 const illegalFun = [setTimeout, setInterval, clearInterval, clearTimeout];
 
@@ -329,20 +329,13 @@ const evaluate_map: baseMap = {
         return func;
     },
     [UnaryExpression]: function (node: estree.UnaryExpression, scope: Scope) {
+        const sk = 'typeof';
         return ({
             '-': () => -evaluate(node.argument, scope),
             '+': () => +evaluate(node.argument, scope),
             '!': () => !evaluate(node.argument, scope),
             '~': () => ~evaluate(node.argument, scope),
             'void': () => void evaluate(node.argument, scope),
-            'typeof': () => {
-                if (node.argument.type === Identifier) {
-                    const $var = scope.$find((node.argument as estree.Identifier).name)
-                    return $var ? typeof $var.$get() : 'undefined'
-                } else {
-                    return typeof evaluate(node.argument, scope)
-                }
-            },
             'delete': () => {
                 if (node.argument.type === MemberExpression) {
                     const { object, property, computed } = node.argument as estree.MemberExpression;
@@ -357,7 +350,17 @@ const evaluate_map: baseMap = {
                     // @ts-ignore
                     if ($this) return $this.$get()[node.argument.name]
                 }
-            }
+            },
+            // 部分老版本 babel 会将 typeof 函数修改为同名的 _typeof 函数，导致循环调用最后栈溢出
+            // 使用特殊的 key 来区分
+            [sk]: () => {
+                if (node.argument.type === Identifier) {
+                    const $var = scope.$find((node.argument as estree.Identifier).name)
+                    return $var ? typeof $var.$get() : 'undefined'
+                } else {
+                    return typeof evaluate(node.argument, scope)
+                }
+            },
         })[node.operator]();
     },
     [UpdateExpression]: function (node: estree.UpdateExpression, scope: Scope) {
@@ -670,9 +673,16 @@ export const evaluate = (node: any, scope: Scope, runner?: typeof thisRunner) =>
         thisRunner.traceStack.pop();
         return res;
     } catch (err) {
+        // 错误已经冒泡到栈定了，触发错误收集处理
+        if (thisRunner.traceStack[0] === thisId) {
+            thisRunner.onError(err);
+            thisRunner.traceStack.pop();
+        }
+        // 错误已经处理过了，直接抛出
         if ((err as EvaluateError).isEvaluateError) {
             throw err;
         }
+        // 第一级错误，需要包裹处理
         if (thisRunner.traceStack[thisRunner.traceStack.length - 1] === thisId) {
             throw createError(errorMessageList.runTimeError, (err as Error)?.message, node, thisRunner.source)
         }
