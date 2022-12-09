@@ -35,10 +35,12 @@ console.log(exports.name);
 ## 参数
 
 ```ts
-interface Options {
-	// 外部注入变量
-	injectObject?: {} | null;
-}
+/**
+ * @parma code 传入的代码片段
+ * @parma injectObject 注入的全局变量
+ * @parma onError 全局错误收集中心
+ */
+declare const run: (code: string, injectObject: Record<string, any>, onError?: (e: Error) => void) => any;
 
 ```
 
@@ -80,6 +82,10 @@ interface Options {
 - [ ] 加速ast解析
 
 ## History
+#### 0.0.9
++ #FIX: 修复 for 循环返回值错误的问题
++ #FIX: 修复在某些版本的 babel 中会将 typeof 编译为同名函数，导致运行栈溢出
++ #FEAT: 新增全局错误收集中心
 #### 0.0.8
 + #CHORE: 更换入口文件位置与新增TS提示
 #### 0.0.7
