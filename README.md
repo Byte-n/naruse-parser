@@ -7,7 +7,7 @@ gzip后只有18kb，基于 TypeScript 编写的 JavaScript 解释器，运行于
 解释器是fork于[jsjs](https://github.com/bramblex/jsjs)。
 
 ## 特性
-+ 支持完成的 ES5 与大部分 ES6
++ 支持完整的 ES5 与大部分 ES6
 + 支持动态 import 导入新模块
 + 支持全局同步与异步错误收集
 + 完整的错误代码提示
