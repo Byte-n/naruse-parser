@@ -6,6 +6,12 @@ gzip后只有18kb，基于 TypeScript 编写的 JavaScript 解释器，运行于
 编译器是基于`acorn`的`0.12.0`改造后的版本。
 解释器是fork于[jsjs](https://github.com/bramblex/jsjs)。
 
+## 特性
++ 支持完成的 ES5 与大部分 ES6
++ 支持动态 import 导入新模块
++ 支持全局同步与异步错误收集
++ 完整的错误代码提示
+
 ## 使用场景
 +  某些限制动态执行JS代码的地方热更新产品。
 +  希望能够安全的运行某些JS代码。(推荐配合Proxy使用，能够完全沙箱隔离)
