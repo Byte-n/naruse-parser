@@ -7,6 +7,7 @@ gzip后只有18kb，基于 TypeScript 编写的 JavaScript 解释器，运行于
 解释器是fork于[jsjs](https://github.com/bramblex/jsjs)。
 
 ## 特性
++ 完全实现自举，自己运行自己（套娃）详见 `test/bootstrapping.js`
 + 支持完整的 ES5 与大部分 ES6
 + 支持动态 import 导入新模块
 + 支持全局同步与异步错误收集
@@ -88,6 +89,9 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.0
++ #FIX: 修复 function 没有变量提升 行为与原生不符 [issues](https://github.com/narusejs/naruse-parser/issues/5)
++ #FEAT: 完成编译器自举，详情见 `/test/bootstrapping.js`
 #### 0.0.9
 + #FIX: 修复 for 循环返回值错误的问题
 + #FIX: 修复在某些版本的 babel 中会将 typeof 编译为同名函数，导致运行栈溢出

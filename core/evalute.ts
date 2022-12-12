@@ -335,7 +335,7 @@ const evaluate_map: baseMap = {
         // 矫正属性
         Object.defineProperty(func, "length", { value: node.params.length });
         // @ts-ignore
-        Object.defineProperty(func, "toString", { value: () => thisRunner.source.slice(node.start, node.end) });
+        Object.defineProperty(func, "toString", { value: () => thisRunner.source.slice(node.start, node.end), configurable: true });
         return func;
     },
     [UnaryExpression]: function (node: estree.UnaryExpression, scope: Scope) {
