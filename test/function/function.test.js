@@ -111,4 +111,15 @@ describe('函数相关测试', () => {
   `);
         expect(func1.qwe.length).to.equal(3);
     });
+
+    it('函数声明提升', () => {
+        const func1 = run(`
+        let cc = qwe;
+        function qwe () {
+            return 123;
+        }
+        exports.qwe = qwe;
+    `);
+        expect(func1.qwe()).to.equal(123);
+    });
 });

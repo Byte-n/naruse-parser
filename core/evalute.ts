@@ -81,7 +81,13 @@ interface baseMap {
 
 const evaluate_map: baseMap = {
     [Program]: function (program: estree.Program, scope: Scope) {
-        for (const node of program.body) evaluate(node, scope);
+        const nonFunctionList: any = [];
+        const list = program.body;
+        for (const node of list) {
+            // function 声明语句 会提升到作用域顶部
+            node.type === FunctionDeclaration ? evaluate(node, scope) : nonFunctionList.push(node);
+        }
+        for (const node of nonFunctionList) evaluate(node, scope);
     },
     [Identifier]: function (node: estree.Identifier, scope: Scope) {
         if (node.name === 'undefined') {
@@ -100,17 +106,21 @@ const evaluate_map: baseMap = {
         return indexGeneratorStackDecorate((stackData) => {
             const new_scope = scope.invasive ? scope : new Scope('block', scope);
             const list = block.body;
-            for (; stackData.index < list.length; stackData.index++) {
-                const node = list[stackData.index];
+            // 非 function 声明语句
+            const nonFunctionList: estree.Statement [] = [];
+            for (const node of list) {
+                // function 声明语句 会提升到作用域顶部
+                node.type === FunctionDeclaration ? evaluate(node, new_scope) : nonFunctionList.push(node);
+            }
+            for (; stackData.index < nonFunctionList.length; stackData.index++) {
+                const node = nonFunctionList[stackData.index];
                 const result = evaluate(node, new_scope);
                 if (
                     isYieldResult(scope, result)
                     || isReturnResult(result)
                     || isContinueResult(result)
                     || isBreakResult(result)
-                ) {
-                    return result;
-                }
+                ) return result;
             }
         }, scope);
     },
