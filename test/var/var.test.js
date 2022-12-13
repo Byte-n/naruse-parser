@@ -75,7 +75,6 @@ describe('声明变量', () => {
                     ar[i] = from[i];
                 }
             }
-            console.log(ar);
             return to.concat(ar || Array.prototype.slice.call(from));
         }
         exports.__spreadArray = __spreadArray;

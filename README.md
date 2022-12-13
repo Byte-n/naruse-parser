@@ -89,6 +89,9 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.1
++ #FIX: 修复 var 不允许重复声明与在 for 循环内声明没有进行变量提升的问题
+
 #### 0.1.0
 + #FIX: 修复 function 没有变量提升 行为与原生不符 [issues](https://github.com/narusejs/naruse-parser/issues/5)
 + #FEAT: 完成编译器自举，详情见 `/test/bootstrapping.js`
