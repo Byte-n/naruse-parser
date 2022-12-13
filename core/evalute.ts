@@ -64,7 +64,7 @@ import {
     ImportExpression
 } from '../expressionType/index'
 import { createError, errorMessageList, EvaluateError } from './error';
-import { BREAK_SIGNAL, CONTINUE_SIGNAL, RETURN_SIGNAL, YIELD_SIGNAL, isGeneratorFunction, isYieldResult, isReturnResult, isContinueResult, isBreakResult } from './signal';
+import { BREAK_SIGNAL, CONTINUE_SIGNAL, RETURN_SIGNAL, YIELD_SIGNAL, isGeneratorFunction, isYieldResult, isReturnResult, isContinueResult, isBreakResult, isPromoteStatement, isVarPromoteStatement } from './signal';
 import { Scope, Kind, indexGeneratorStackDecorate } from './scope';
 
 let anonymousId = 0;
@@ -85,7 +85,7 @@ const evaluate_map: baseMap = {
         const list = program.body;
         for (const node of list) {
             // function 声明语句 会提升到作用域顶部
-            node.type === FunctionDeclaration ? evaluate(node, scope) : nonFunctionList.push(node);
+            isPromoteStatement(node) ? evaluate(node, scope) : nonFunctionList.push(node);
         }
         for (const node of nonFunctionList) evaluate(node, scope);
     },
@@ -109,8 +109,8 @@ const evaluate_map: baseMap = {
             // 非 function 声明语句
             const nonFunctionList: estree.Statement [] = [];
             for (const node of list) {
-                // function 声明语句 会提升到作用域顶部
-                node.type === FunctionDeclaration ? evaluate(node, new_scope) : nonFunctionList.push(node);
+                // 变量提升语句需要提升到作用域顶部执行
+                isPromoteStatement(node) ? evaluate(node, new_scope) : nonFunctionList.push(node);
             }
             for (; stackData.index < nonFunctionList.length; stackData.index++) {
                 const node = nonFunctionList[stackData.index];
@@ -145,7 +145,7 @@ const evaluate_map: baseMap = {
     [ForStatement]: function (node: estree.ForStatement, scope: Scope) {
         for (
             const new_scope = new Scope('loop', scope),
-            init_val = node.init ? evaluate(node.init, new_scope) : null;
+            init_val = node.init ? evaluate(node.init, isVarPromoteStatement(node.init) ? scope : new_scope) : null;
             node.test ? evaluate(node.test, new_scope) : true;
             node.update ? evaluate(node.update, new_scope) : void (0)
         ) {
@@ -566,20 +566,15 @@ const evaluate_map: baseMap = {
 
             if (matched) {
                 const result = evaluate($case, new_scope)
-
-                if (result === BREAK_SIGNAL) { break }
-                else if (result === CONTINUE_SIGNAL || result === RETURN_SIGNAL) {
-                    return result
-                }
+                if (isBreakResult(result)) { break }
+                else if (isReturnResult(result) || isContinueResult(result)) { return result }
             }
         }
     },
     [SwitchCase]: function (node: estree.SwitchCase, scope: Scope) {
         for (const stmt of node.consequent) {
             const result = evaluate(stmt, scope)
-            if (result === BREAK_SIGNAL
-                || result === CONTINUE_SIGNAL
-                || result === RETURN_SIGNAL) {
+            if (isReturnResult(result) || isBreakResult(result) || isContinueResult(result)) {
                 return result
             }
         }
@@ -590,9 +585,9 @@ const evaluate_map: baseMap = {
             new_scope.invasive = true
             const result = evaluate(node.body, new_scope)
 
-            if (result === BREAK_SIGNAL) { break }
-            else if (result === CONTINUE_SIGNAL) { continue }
-            else if (result === RETURN_SIGNAL) { return result }
+            if (isBreakResult(result)) { break }
+            else if (isContinueResult(result)) { continue }
+            else if (isReturnResult(result)) { return result }
         }
     },
     [DoWhileStatement]: function (node: estree.DoWhileStatement, scope: Scope) {

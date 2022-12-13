@@ -143,6 +143,10 @@ export class Scope {
         if (!$var) {
             this.content[name] = new ScopeVar('var', value);
             return true;
+            // #fix var 不允许重复声明
+        } else if ($var instanceof ScopeVar) {
+            $var.$set(value);
+            return true;
         } return false;
     }
     public $declar(kind: Kind, raw_name: any, value: any) {

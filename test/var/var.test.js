@@ -53,4 +53,37 @@ describe('声明变量', () => {
             `);
         }).to.throw();
     });
+
+    it('allow var reset value', () => {
+        const exports = run(`
+        var cc = 123;
+        var cc = 321;
+        exports.cc = cc;
+        `);
+        const {
+            cc,
+        } = exports;
+        expect(cc).to.equal(321);
+    });
+
+    it('use var in forStatment will promote', () => {
+        const exports = run(`
+        function __spreadArray(to, from, pack) {
+            if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+                if (ar || !(i in from)) {
+                    if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+                    ar[i] = from[i];
+                }
+            }
+            console.log(ar);
+            return to.concat(ar || Array.prototype.slice.call(from));
+        }
+        exports.__spreadArray = __spreadArray;
+        `);
+        const {
+            __spreadArray,
+        } = exports;
+        expect(__spreadArray).to.be.a('function');
+        expect(__spreadArray([1, 2], [3, 4])).to.deep.equal([1, 2, 3, 4]);
+    })
 });
