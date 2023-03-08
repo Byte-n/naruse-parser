@@ -13,6 +13,9 @@ gzip后只有18kb，基于 TypeScript 编写的 JavaScript 解释器，运行于
 + 支持全局同步与异步错误收集
 + 完整的错误代码提示
 
+## 在线demo
+[点击体验](https://narusejs.github.io/naruse-parser/)
+
 ## 使用场景
 +  某些限制动态执行JS代码的地方热更新产品。
 +  希望能够安全的运行某些JS代码。(推荐配合Proxy使用，能够完全沙箱隔离)
