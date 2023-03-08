@@ -41,10 +41,20 @@
 }
 .resultDiv {
     width: 500px;
-    height: 300px;
+    height: 200px;
     font-size: 20px;
     padding: 10px;
     margin-top: 10px;
+    border: 1px solid black;
+}
+
+.errorResultDiv {
+    width: 500px;
+    height: 200px;
+    font-size: 20px;
+    padding: 10px;
+    margin-top: 10px;
+    color: rgb(245, 55, 55);
     border: 1px solid black;
 }
 </style>
@@ -55,20 +65,35 @@
         <textarea class="bigTextArea" @input="updateMessage" :value="message" placeholder="请输入要执行的代码"></textarea>
         <button class="blueBtn" @click="execute">执行</button>
         <textarea class="resultDiv">{{ result }}</textarea>
+        <textarea class="errorResultDiv">{{ errorResult }}</textarea>
     </div>
 </body>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="./naruse-parser.js"> </script>
 <script>
+
+const baseCode =
+`// print 
+console.log("hello world"); 
+// deconstruct 
+const { q, w } = { q: 1, w: 2 }; console.log(q, w);
+
+Promise.resolve().then(() => {
+    throw new Error('this is a error');
+})
+`
+
+
     const {
         createApp
     } = Vue
     createApp({
         data() {
             return {
-                message: '// print \nconsole.log("hello world"); \n// deconstruct \nconst { q, w } = { q: 1, w: 2 }; console.log(q, w);',
+                message: baseCode,
                 result: '输出结果会显示在这里，打开控制台查看更多信息',
+                errorResult: '全局错误中心收集到的同步或异步错误信息会展示在这里',
             }
         },
         created() {
@@ -83,7 +108,10 @@
                 this.message = e.target.value
             },
             execute() {
-                naruseParser.run(this.message);
+                const errorCenter = (err) => {
+                    this.errorResult += '\n' + err;
+                };
+                naruseParser.run(this.message, {}, errorCenter);
             }
         }
     }).mount('#app')
