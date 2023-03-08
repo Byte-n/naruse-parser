@@ -25,6 +25,11 @@ const interpreter = {
         {
             file: './dist/index.js',
             format: 'cjs',
+        },
+        {
+            file: './docs/naruse-parser.js',
+            format: 'umd',
+            name: 'naruseParser',
         }
     ],
     plugins: [
@@ -32,7 +37,7 @@ const interpreter = {
         alias({
             customResolver
         }),
-        // uglify({ mangle: {  toplevel: true}, compress: { toplevel: true } }),
+                // uglify({ mangle: {  toplevel: true}, compress: { toplevel: true } }),
     ],
 };
 

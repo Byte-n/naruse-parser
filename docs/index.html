@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>naruse-parser</title>
+</head>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    flex-direction: column;
+}
+
+.bigTextArea {
+    width: 500px;
+    height: 300px;
+    font-size: 20px;
+    padding: 10px;
+    margin: 5px;
+}
+.blueBtn {
+    width: 100px;
+    height: 50px;
+    background-color: blue;
+    color: white;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+.resultDiv {
+    width: 500px;
+    height: 300px;
+    font-size: 20px;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid black;
+}
+</style>
+
+<body>
+    <div class="center" id="app">
+        <h3>代码输入框</h3>
+        <textarea class="bigTextArea" @input="updateMessage" :value="message" placeholder="请输入要执行的代码"></textarea>
+        <button class="blueBtn" @click="execute">执行</button>
+        <textarea class="resultDiv">{{ result }}</textarea>
+    </div>
+</body>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="./naruse-parser.js"> </script>
+<script>
+    const {
+        createApp
+    } = Vue
+    createApp({
+        data() {
+            return {
+                message: '// print \nconsole.log("hello world"); \n// deconstruct \nconst { q, w } = { q: 1, w: 2 }; console.log(q, w);',
+                result: '输出结果会显示在这里，打开控制台查看更多信息',
+            }
+        },
+        created() {
+            const oldLog  = console.log;
+            console.log = (...msg) => {
+                oldLog(...msg);
+                this.result += '\n' + String(msg);
+            }
+        },
+        methods: {
+            updateMessage(e) {
+                this.message = e.target.value
+            },
+            execute() {
+                naruseParser.run(this.message);
+            }
+        }
+    }).mount('#app')
+</script>
+</html>
