@@ -92,6 +92,9 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.2
++ #FIX: 修复正常作用域下 var 没有提前声明的问题 & for in /of 同样支持 var 作用域提升
+
 #### 0.1.1
 + #FIX: 修复 var 不允许重复声明与在 for 循环内声明没有进行变量提升的问题
 
