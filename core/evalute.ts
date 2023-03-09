@@ -78,15 +78,48 @@ interface baseMap {
     [key: string]: Function
 }
 
+type BodyNodes = (estree.Statement | estree.ModuleDeclaration | estree.Statement)[];
+
+
+/** 
+ * 提炼 for语句中的变量提升
+ * k: 语句
+ * v: 对应的属性名
+ */
+const RefineForPromoteNameMap = {
+    [ForStatement]: 'init',
+    [ForInStatement]: 'left',
+    [ForOfStatement]: 'left'
+}
+
+/**
+ * 提炼非函数声明语句，并执行函数声明语句 与 初始化 var 变量
+ */
+const refinePromteStatements = (nodes: BodyNodes, scope: Scope): BodyNodes => {
+    const nonPromoteList: BodyNodes = [];
+    for (const node of nodes) {
+        // function 声明语句 提升到作用域顶部直接执行
+        if (isPromoteStatement(node)) {
+            evaluate(node, scope);
+        } else {
+            // 如果是 var 则需要先声明变量为 undefined
+            if (isVarPromoteStatement(node)) evaluate_map[VariableDeclaration](node, scope, true);
+            // for,forin,forof 循环中的 var 声明语句也需要提升
+            if (RefineForPromoteNameMap[node.type]) {
+                const initNode = node[RefineForPromoteNameMap[node.type]];
+                if (isVarPromoteStatement(initNode)) evaluate_map[VariableDeclaration](initNode, scope, true);
+            }
+            nonPromoteList.push(node);
+        }
+    }
+    return nonPromoteList;
+}
+
 
 const evaluate_map: baseMap = {
     [Program]: function (program: estree.Program, scope: Scope) {
-        const nonFunctionList: any = [];
         const list = program.body;
-        for (const node of list) {
-            // function 声明语句 会提升到作用域顶部
-            isPromoteStatement(node) ? evaluate(node, scope) : nonFunctionList.push(node);
-        }
+        const nonFunctionList = refinePromteStatements(list, scope);
         for (const node of nonFunctionList) evaluate(node, scope);
     },
     [Identifier]: function (node: estree.Identifier, scope: Scope) {
@@ -107,11 +140,7 @@ const evaluate_map: baseMap = {
             const new_scope = scope.invasive ? scope : new Scope('block', scope);
             const list = block.body;
             // 非 function 声明语句
-            const nonFunctionList: estree.Statement [] = [];
-            for (const node of list) {
-                // 变量提升语句需要提升到作用域顶部执行
-                isPromoteStatement(node) ? evaluate(node, new_scope) : nonFunctionList.push(node);
-            }
+            const nonFunctionList = refinePromteStatements(list, new_scope);
             for (; stackData.index < nonFunctionList.length; stackData.index++) {
                 const node = nonFunctionList[stackData.index];
                 const result = evaluate(node, new_scope);
@@ -145,6 +174,7 @@ const evaluate_map: baseMap = {
     [ForStatement]: function (node: estree.ForStatement, scope: Scope) {
         for (
             const new_scope = new Scope('loop', scope),
+            // 只有 var 变量才会被提高到上一作用域
             init_val = node.init ? evaluate(node.init, isVarPromoteStatement(node.init) ? scope : new_scope) : null;
             node.test ? evaluate(node.test, new_scope) : true;
             node.update ? evaluate(node.update, new_scope) : void (0)
@@ -163,14 +193,15 @@ const evaluate_map: baseMap = {
         }
         return func;
     },
-    [VariableDeclaration]: function (node: estree.VariableDeclaration, scope: Scope) {
+    [VariableDeclaration]: function (node: estree.VariableDeclaration, scope: Scope, isVarPromote = false) {
         const { kind } = node;
         return indexGeneratorStackDecorate((stackData) => {
             const list = node.declarations;
             for (; stackData.index < list.length; stackData.index++) {
                 const declaration = list[stackData.index];
                 const { id, init } = declaration;
-                const value = init ? evaluate(init, scope) : undefined;
+                // 如果是变量提升语句，需要先声明一个 undefined 变量，等待后续的重新赋值语句
+                const value = !isVarPromote && init ? evaluate(init, scope) : undefined;
                 // 迭代器变量中断
                 if (isYieldResult(scope, value)) return value;
                 // 正常流程

@@ -85,4 +85,46 @@ describe('声明变量', () => {
         expect(__spreadArray).to.be.a('function');
         expect(__spreadArray([1, 2], [3, 4])).to.deep.equal([1, 2, 3, 4]);
     })
+
+    it('test var variable will be lifted', () => {
+        const exports = run(`
+        exports.a = a;
+        var a = 1;
+        exports.b = a;
+        `);
+        const {
+            a,
+            b,
+        } = exports;
+        expect(a).to.equal(undefined);
+        expect(b).to.equal(1);
+    })
+
+    it('for of loop var will be lifted', () => {
+        const exports = run(`
+        var a = 1;
+        for (var i of [1, 2, 3]) {
+            a = i;
+        }
+        exports.a = a;
+        `);
+        const {
+            a,
+        } = exports;
+        expect(a).to.equal(3);
+    });
+
+    it('for in loop var will be lifted', () => {
+        const exports = run(`
+        var a = 1;
+        for (var i in [1, 2, 3]) {
+            a = i;
+        }
+        exports.a = a;
+        `);
+        const {
+            a,
+        } = exports;
+        expect(a).to.equal('2');
+    });
 });
