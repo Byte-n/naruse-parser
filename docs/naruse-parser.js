@@ -1026,25 +1026,21 @@
         var thisId = thisRunner.traceId++;
         thisRunner.traceStack.push(thisId);
         try {
-            var res = _evaluate(node, scope);
-            thisRunner.traceStack.pop();
-            return res;
+            return _evaluate(node, scope);
         }
         catch (err) {
             // 错误已经冒泡到栈定了，触发错误收集处理
             if (thisRunner.traceStack[0] === thisId) {
                 thisRunner.onError(err);
-                thisRunner.traceStack.pop();
             }
             // 错误已经处理过了，直接抛出
             if (err.isEvaluateError) {
                 throw err;
             }
-            // 第一级错误，需要包裹处理
-            if (thisRunner.traceStack[thisRunner.traceStack.length - 1] === thisId) {
-                throw createError(errorMessageList.runTimeError, err === null || err === void 0 ? void 0 : err.message, node, thisRunner.source);
-            }
-            throw err;
+            throw createError(errorMessageList.runTimeError, err === null || err === void 0 ? void 0 : err.message, node, thisRunner.source);
+        }
+        finally {
+            thisRunner.traceStack.pop();
         }
     };
 

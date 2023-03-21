@@ -92,6 +92,8 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.3
++ #FIX: 修复错误事件中心多次报错无法收集问题 [PR6](https://github.com/narusejs/naruse-parser/pull/6) [@Byte-n](https://github.com/Byte-n)
 #### 0.1.2
 + #FIX: 修复正常作用域下 var 没有提前声明的问题 & for in /of 同样支持 var 作用域提升
 
