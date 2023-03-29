@@ -102,4 +102,34 @@ describe('for 循环测试', () => {
         } = exports;
         expect(pcr).to.deep.equal(123);
     })
+    it('提前声明变量后使用 for in or of', () => {
+        const exports = run(`
+        const cc = () => {
+            const ww = { aa: 1, bb:2 };
+            let i;
+            for (i in ww) {
+                exports[i] = ww[i];
+            }
+        }
+        cc();
+        `)
+        const { aa, bb } = exports;
+        expect(aa).to.equal(1);
+        expect(bb).to.equal(2);
+
+        const exports2 = run(`
+        const cc = () => {
+            const ww = [1,2,3];
+            let i;
+            for (i of ww) {
+                exports[i] = i;
+            }
+        }
+        cc();
+        `)
+        const { 1: one, 2: two, 3: three } = exports2;
+        expect(one).to.equal(1);
+        expect(two).to.equal(2);
+        expect(three).to.equal(3);
+    })
 });

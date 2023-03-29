@@ -227,6 +227,7 @@ const evaluate_map: baseMap = {
             if (!element) return;
             if (element.type === Identifier) {
                 const { name } = element as estree.Identifier;
+                if (!kind) kind = 'var';
                 if (!scope.$declar(kind as Kind, name, value[index])) {
                     throw createError(errorMessageList.duplicateDefinition, name, node, thisRunner.source);
                 }
@@ -636,14 +637,17 @@ const evaluate_map: baseMap = {
     },
     [ForInStatement]: function (node: estree.ForInStatement, scope: Scope, isForOf: boolean = false) {
         const kind = (<estree.VariableDeclaration>node.left).kind
-        const id = (<estree.VariableDeclaration>node.left).declarations[0].id;
+        const id = kind ? (<estree.VariableDeclaration>node.left).declarations[0].id : node.left;
 
         const forInit = (value: any) => {
             const new_scope = new Scope('loop', scope)
             new_scope.invasive = true
             if (id.type === Identifier) {
                 const name = (<estree.Identifier>id).name
-                new_scope.$declar(kind, name, value)
+                // fix: 修复了 in 或者 of 可能提前声明变量的问题
+                // let i; for (i in [1, 2, 3]) {  };
+                const newKind = kind || 'var'
+                new_scope.$declar(newKind, name, value)
             } else {
                 evaluate_map[id.type](id, new_scope, kind, value)
             }
@@ -654,16 +658,16 @@ const evaluate_map: baseMap = {
         if (isForOf) {
             for (let index = 0; index < init.length; index++) {
                 const result = forInit(init[index]);
-                if (result === BREAK_SIGNAL) { break }
-                else if (result === CONTINUE_SIGNAL) { continue }
-                else if (result === RETURN_SIGNAL) { return result }
+                if (isBreakResult(result)) { break }
+                else if (isContinueResult(result)) { continue }
+                else if (isReturnResult(result)) { return result }
             }
         } else {
             for (const value in init) {
                 const result = forInit(value);
-                if (result === BREAK_SIGNAL) { break }
-                else if (result === CONTINUE_SIGNAL) { continue }
-                else if (result === RETURN_SIGNAL) { return result }
+                if (isBreakResult(result)) { break }
+                else if (isContinueResult(result)) { continue }
+                else if (isReturnResult(result)) { return result }
             }
         }
     },
