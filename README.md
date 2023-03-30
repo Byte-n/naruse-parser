@@ -96,6 +96,8 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.7
++ #FIX: 修复当 var 定义的变量名与注入变量名相同时会取到为空
 #### 0.1.6
 + #EAT: 优化了部分代码 & 外部注入变量更改为 Var 赋值类型，允许内部进行修改
 #### 0.1.5
