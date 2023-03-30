@@ -92,6 +92,10 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.5
+#FIX: 修复了在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题 [issue](https://github.com/narusejs/naruse-parser/issues/7)
+#### 0.1.4
++ #FIX: 修复了在 ForIn 与 ForOf 中不允许提前声明变量的问题 & 数组解构不能直接赋值 [issue](https://github.com/narusejs/naruse-parser/issues/8)
 #### 0.1.3
 + #FIX: 修复错误事件中心多次报错无法收集问题 [PR6](https://github.com/narusejs/naruse-parser/pull/6) [@Byte-n](https://github.com/Byte-n)
 #### 0.1.2
