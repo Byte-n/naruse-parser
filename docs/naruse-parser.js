@@ -326,6 +326,7 @@
     var _a, _b;
     var anonymousId = 0;
     var thisRunner;
+    var ObjectDefineProperty = Object.defineProperty;
     var illegalFun = [setTimeout, setInterval, clearInterval, clearTimeout];
     var isUndefinedOrNull = function (val) { return val === void 0 || val === null; };
     /**
@@ -438,9 +439,8 @@
         },
         _b[FunctionDeclaration] = function (node, scope) {
             var func = evaluate_map[FunctionExpression](node, scope);
-            var func_name = (node.id || { name: "anonymous".concat(anonymousId++) }).name;
-            if (!scope.$var(func_name, func)) {
-                throw createError(errorMessageList.duplicateDefinition, func_name, node, thisRunner.source);
+            if (!scope.$var(func.name, func)) {
+                throw createError(errorMessageList.duplicateDefinition, func.name, node, thisRunner.source);
             }
             return func;
         },
@@ -482,6 +482,8 @@
                     return;
                 if (element.type === Identifier) {
                     var name_2 = element.name;
+                    if (!kind)
+                        kind = 'var';
                     if (!scope.$declar(kind, name_2, value[index])) {
                         throw createError(errorMessageList.duplicateDefinition, name_2, node, thisRunner.source);
                     }
@@ -548,10 +550,10 @@
                         object[key] = value;
                     }
                     else if (kind === 'set') {
-                        Object.defineProperty(object, key, { set: value });
+                        ObjectDefineProperty(object, key, { set: value });
                     }
                     else if (kind === 'get') {
-                        Object.defineProperty(object, key, { get: value });
+                        ObjectDefineProperty(object, key, { get: value });
                     }
                 }
                 else {
@@ -563,6 +565,7 @@
         _b[FunctionExpression] = function (node, scope, isArrowFunction) {
             if (isArrowFunction === void 0) { isArrowFunction = false; }
             var func;
+            var func_name = (node.id || { name: "anonymous".concat(anonymousId++) }).name;
             if (node.generator) {
                 func = function () {
                     var args = [];
@@ -582,6 +585,7 @@
                     });
                     new_scope.$const('this', this);
                     new_scope.$const('arguments', arguments);
+                    new_scope.$var(func_name, func);
                     var completed = false;
                     var next = function (arg) {
                         var _a;
@@ -629,6 +633,8 @@
                     else {
                         new_scope.$const('this', this);
                         new_scope.$const('arguments', arguments);
+                        // fix: 修复在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题
+                        new_scope.$var(func_name, func);
                         result = evaluate(node.body, new_scope);
                     }
                     if (result === RETURN_SIGNAL) {
@@ -638,12 +644,14 @@
             }
             // 箭头函数的prototype属性指向的是父函数的prototype属性
             if (isArrowFunction) {
-                Object.defineProperty(func, "prototype", { value: undefined });
+                ObjectDefineProperty(func, "prototype", { value: undefined });
             }
             // 矫正属性
-            Object.defineProperty(func, "length", { value: node.params.length });
+            ObjectDefineProperty(func, "length", { value: node.params.length });
             // @ts-ignore
-            Object.defineProperty(func, "toString", { value: function () { return thisRunner.source.slice(node.start, node.end); }, configurable: true });
+            ObjectDefineProperty(func, "toString", { value: function () { return thisRunner.source.slice(node.start, node.end); }, configurable: true });
+            // 矫正name属性
+            ObjectDefineProperty(func, "name", { value: func_name, configurable: true });
             return func;
         },
         _b[UnaryExpression] = function (node, scope) {
@@ -940,13 +948,16 @@
         _b[ForInStatement] = function (node, scope, isForOf) {
             if (isForOf === void 0) { isForOf = false; }
             var kind = node.left.kind;
-            var id = node.left.declarations[0].id;
+            var id = kind ? node.left.declarations[0].id : node.left;
             var forInit = function (value) {
                 var new_scope = new Scope('loop', scope);
                 new_scope.invasive = true;
                 if (id.type === Identifier) {
                     var name_9 = id.name;
-                    new_scope.$declar(kind, name_9, value);
+                    // fix: 修复了 in 或者 of 可能提前声明变量的问题
+                    // let i; for (i in [1, 2, 3]) {  };
+                    var newKind = kind || 'var';
+                    new_scope.$declar(newKind, name_9, value);
                 }
                 else {
                     evaluate_map[id.type](id, new_scope, kind, value);
@@ -957,13 +968,13 @@
             if (isForOf) {
                 for (var index = 0; index < init.length; index++) {
                     var result = forInit(init[index]);
-                    if (result === BREAK_SIGNAL) {
+                    if (isBreakResult(result)) {
                         break;
                     }
-                    else if (result === CONTINUE_SIGNAL) {
+                    else if (isContinueResult(result)) {
                         continue;
                     }
-                    else if (result === RETURN_SIGNAL) {
+                    else if (isReturnResult(result)) {
                         return result;
                     }
                 }
@@ -971,13 +982,13 @@
             else {
                 for (var value in init) {
                     var result = forInit(value);
-                    if (result === BREAK_SIGNAL) {
+                    if (isBreakResult(result)) {
                         break;
                     }
-                    else if (result === CONTINUE_SIGNAL) {
+                    else if (isContinueResult(result)) {
                         continue;
                     }
-                    else if (result === RETURN_SIGNAL) {
+                    else if (isReturnResult(result)) {
                         return result;
                     }
                 }

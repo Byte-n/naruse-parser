@@ -70,6 +70,8 @@ import { Scope, Kind, indexGeneratorStackDecorate } from './scope';
 let anonymousId = 0;
 let thisRunner: { source: string, currentNode: any, traceId: number, traceStack: any[], onError?: (err: EvaluateError) => void };
 
+const ObjectDefineProperty = Object.defineProperty;
+
 const illegalFun = [setTimeout, setInterval, clearInterval, clearTimeout];
 
 const isUndefinedOrNull = (val: any) => val === void 0 || val === null;
@@ -187,9 +189,8 @@ const evaluate_map: baseMap = {
     },
     [FunctionDeclaration]: function (node: estree.FunctionDeclaration, scope: Scope) {
         const func = evaluate_map[FunctionExpression](node, scope);
-        const { name: func_name } = node.id || { name: `anonymous${anonymousId++}` };
-        if (!scope.$var(func_name, func)) {
-            throw createError(errorMessageList.duplicateDefinition, func_name, node, thisRunner.source);
+        if (!scope.$var(func.name, func)) {
+            throw createError(errorMessageList.duplicateDefinition, func.name, node, thisRunner.source);
         }
         return func;
     },
@@ -288,9 +289,9 @@ const evaluate_map: baseMap = {
                 if (kind === 'init') {
                     object[key] = value;
                 } else if (kind === 'set') {
-                    Object.defineProperty(object, key, { set: value });
+                    ObjectDefineProperty(object, key, { set: value });
                 } else if (kind === 'get') {
-                    Object.defineProperty(object, key, { get: value });
+                    ObjectDefineProperty(object, key, { get: value });
                 }
             } else {
                 throw createError(errorMessageList.notSupportNode, property.type, node, thisRunner.source);
@@ -300,6 +301,7 @@ const evaluate_map: baseMap = {
     },
     [FunctionExpression]: function (node: estree.FunctionExpression, scope: Scope, isArrowFunction = false) {
         let func;
+        const { name: func_name } = node.id || { name: `anonymous${anonymousId++}` };
         if (node.generator) {
             func = function (this: any, ...args: any[]) {
                 const new_scope = new Scope('function', scope, true);
@@ -314,6 +316,7 @@ const evaluate_map: baseMap = {
                 })
                 new_scope.$const('this', this);
                 new_scope.$const('arguments', arguments);
+                new_scope.$var(func_name, func);
                 let completed = false;
                 const next = (arg: any) => {
                     if (completed) return { value: undefined, done: true };
@@ -352,6 +355,8 @@ const evaluate_map: baseMap = {
                 } else {
                     new_scope.$const('this', this);
                     new_scope.$const('arguments', arguments);
+                    // fix: 修复在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题
+                    new_scope.$var(func_name, func);
                     result = evaluate(node.body, new_scope);
                 }
                 if (result === RETURN_SIGNAL) {
@@ -361,13 +366,15 @@ const evaluate_map: baseMap = {
         }
         // 箭头函数的prototype属性指向的是父函数的prototype属性
         if (isArrowFunction) {
-            Object.defineProperty(func, "prototype", { value: undefined });
+            ObjectDefineProperty(func, "prototype", { value: undefined });
         }
 
         // 矫正属性
-        Object.defineProperty(func, "length", { value: node.params.length });
+        ObjectDefineProperty(func, "length", { value: node.params.length });
         // @ts-ignore
-        Object.defineProperty(func, "toString", { value: () => thisRunner.source.slice(node.start, node.end), configurable: true });
+        ObjectDefineProperty(func, "toString", { value: () => thisRunner.source.slice(node.start, node.end), configurable: true });
+        // 矫正name属性
+        ObjectDefineProperty(func, "name", { value: func_name, configurable: true });
         return func;
     },
     [UnaryExpression]: function (node: estree.UnaryExpression, scope: Scope) {

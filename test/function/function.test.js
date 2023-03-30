@@ -122,4 +122,15 @@ describe('函数相关测试', () => {
     `);
         expect(func1.qwe()).to.equal(123);
     });
+
+    it('function 函数在非 block 域中创建后， block 内部访问不到该函数', () => {
+        const func1 = run(`
+        var w = a => a;
+        let i = 0;
+        w(function qwe () {
+            exports.qwe = qwe;
+         })();
+    `);
+        expect(func1.qwe).not.to.equal(undefined);
+    })
 });
