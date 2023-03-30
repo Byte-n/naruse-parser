@@ -49,7 +49,7 @@ export declare class Scope {
     $var(raw_name: string, value: any): boolean;
     $declar(kind: Kind, raw_name: any, value: any): boolean;
     /**
-     * 获取最近的非函数作用域
+     * 获取最近的函数作用域
      */
     getLastUnFunctionScope(): Scope;
 }

@@ -317,7 +317,7 @@
             })[kind]();
         };
         /**
-         * 获取最近的非函数作用域
+         * 获取最近的函数作用域
          */
         Scope.prototype.getLastUnFunctionScope = function () {
             var scope = this;
@@ -466,6 +466,9 @@
                     // 正常流程
                     if (id.type === Identifier) {
                         var name_1 = id.name;
+                        // 如果作用域提升时变量已经存在，则不需要再次声明
+                        if (isVarPromote && scope.$find(name_1) !== null)
+                            continue;
                         if (!scope.$declar(kind, name_1, value)) {
                             throw createError(errorMessageList.duplicateDefinition, name_1, node, thisRunner.source);
                         }

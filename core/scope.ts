@@ -148,7 +148,8 @@ export class Scope {
         } else if ($var instanceof ScopeVar) {
             $var.$set(value);
             return true;
-        } return false;
+        }
+        return false;
     }
     public $declar(kind: Kind, raw_name: any, value: any) {
         return ({
@@ -158,7 +159,7 @@ export class Scope {
         })[kind]();
     }
     /**
-     * 获取最近的非函数作用域
+     * 获取最近的函数作用域
      */
     public getLastUnFunctionScope() {
         let scope: Scope = this;

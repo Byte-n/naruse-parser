@@ -208,6 +208,8 @@ const evaluate_map: baseMap = {
                 // 正常流程
                 if (id.type === Identifier) {
                     const { name } = id as estree.Identifier;
+                    // 如果作用域提升时变量已经存在，则不需要再次声明
+                    if (isVarPromote && scope.$find(name) !== null) continue;
                     if (!scope.$declar(kind, name, value)) {
                         throw createError(errorMessageList.duplicateDefinition, name, node, thisRunner.source);
                     }
