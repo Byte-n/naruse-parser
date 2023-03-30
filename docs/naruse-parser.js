@@ -180,6 +180,7 @@
     var CONTINUE_SIGNAL = {};
     var RETURN_SIGNAL = { result: undefined };
     var YIELD_SIGNAL = { result: undefined };
+    var THIS = 'this';
 
     var ScopeVar = /** @class */ (function () {
         function ScopeVar(kind, value) {
@@ -262,9 +263,7 @@
             this.type = type;
             this.parent = parent || null;
             this.generator = generator;
-            // if (generator) {
             this.generatorStack = new GeneratorStack();
-            // }
         }
         Scope.prototype.$find = function (raw_name) {
             var name = this.prefix + raw_name;
@@ -296,10 +295,7 @@
         };
         Scope.prototype.$var = function (raw_name, value) {
             var name = this.prefix + raw_name;
-            var scope = this;
-            while (scope.parent !== null && scope.type !== 'function') {
-                scope = scope.parent;
-            }
+            var scope = this.getLastUnFunctionScope();
             var $var = scope.content[name];
             if (!$var) {
                 this.content[name] = new ScopeVar('var', value);
@@ -319,6 +315,16 @@
                 let: function () { return _this.$let(raw_name, value); },
                 const: function () { return _this.$const(raw_name, value); },
             })[kind]();
+        };
+        /**
+         * 获取最近的非函数作用域
+         */
+        Scope.prototype.getLastUnFunctionScope = function () {
+            var scope = this;
+            while (scope.parent !== null && scope.type !== "function" /* ScopeType.Function */) {
+                scope = scope.parent;
+            }
+            return scope;
         };
         return Scope;
     }());
@@ -389,9 +395,9 @@
         },
         _b[BlockStatement] = function (block, scope) {
             return indexGeneratorStackDecorate(function (stackData) {
-                var new_scope = scope.invasive ? scope : new Scope('block', scope);
+                var new_scope = scope.invasive ? scope : new Scope("block" /* ScopeType.Block */, scope);
                 var list = block.body;
-                // 非 function 声明语句
+                // 提炼语句需要提升到父级作用域
                 var nonFunctionList = refinePromteStatements(list, new_scope);
                 for (; stackData.index < nonFunctionList.length; stackData.index++) {
                     var node = nonFunctionList[stackData.index];
@@ -425,7 +431,7 @@
                 return evaluate(node.alternate, scope);
         },
         _b[ForStatement] = function (node, scope) {
-            for (var new_scope = new Scope('loop', scope), 
+            for (var new_scope = new Scope("loop" /* ScopeType.Loop */, scope), 
             // 只有 var 变量才会被提高到上一作用域
             init_val = node.init ? evaluate(node.init, isVarPromoteStatement(node.init) ? scope : new_scope) : null; node.test ? evaluate(node.test, new_scope) : true; node.update ? evaluate(node.update, new_scope) : void (0)) {
                 var result = evaluate(node.body, new_scope);
@@ -525,7 +531,7 @@
             }
         },
         _b[ThisExpression] = function (node, scope) {
-            var this_val = scope.$find('this');
+            var this_val = scope.$find(THIS);
             return this_val ? this_val.$get() : null;
         },
         _b[ArrayExpression] = function (node, scope) {
@@ -572,7 +578,7 @@
                     for (var _i = 0; _i < arguments.length; _i++) {
                         args[_i] = arguments[_i];
                     }
-                    var new_scope = new Scope('function', scope, true);
+                    var new_scope = new Scope("function" /* ScopeType.Function */, scope, true);
                     new_scope.invasive = true;
                     node.params.forEach(function (param, index) {
                         if (param.type === Identifier) {
@@ -583,7 +589,7 @@
                             evaluate_map[param.type](param, new_scope, 'var', args[index]);
                         }
                     });
-                    new_scope.$const('this', this);
+                    new_scope.$const(THIS, this);
                     new_scope.$const('arguments', arguments);
                     new_scope.$var(func_name, func);
                     var completed = false;
@@ -610,7 +616,7 @@
                     for (var _i = 0; _i < arguments.length; _i++) {
                         args[_i] = arguments[_i];
                     }
-                    var new_scope = new Scope('function', scope);
+                    var new_scope = new Scope("function" /* ScopeType.Function */, scope);
                     new_scope.invasive = true;
                     node.params.forEach(function (param, index) {
                         if (param.type === Identifier) {
@@ -623,15 +629,15 @@
                     });
                     var result;
                     if (isArrowFunction) {
-                        var parent_scope = scope.$find('this').$get();
-                        new_scope.$const('this', parent_scope ? parent_scope : null);
+                        var parent_scope = scope.$find(THIS).$get();
+                        new_scope.$const(THIS, parent_scope ? parent_scope : null);
                         result = evaluate(node.body, new_scope);
                         if (node.body.type !== BlockStatement) {
                             return result;
                         }
                     }
                     else {
-                        new_scope.$const('this', this);
+                        new_scope.$const(THIS, this);
                         new_scope.$const('arguments', arguments);
                         // fix: 修复在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题
                         new_scope.$var(func_name, func);
@@ -675,7 +681,7 @@
                             }
                         }
                         else if (node.argument.type === Identifier) {
-                            var $this = scope.$find('this');
+                            var $this = scope.$find(THIS);
                             // @ts-ignore
                             if ($this)
                                 return $this.$get()[node.argument.name];
@@ -829,7 +835,7 @@
                 func = this_val[funcName];
             }
             else {
-                this_val = scope.$find('this').$get();
+                this_val = scope.$find(THIS).$get();
                 func = evaluate(node.callee, scope);
             }
             if (typeof func !== 'function')
@@ -862,7 +868,7 @@
             catch (err) {
                 if (node.handler) {
                     var param = node.handler.param;
-                    var new_scope = new Scope('block', scope);
+                    var new_scope = new Scope("block" /* ScopeType.Block */, scope);
                     new_scope.invasive = true;
                     new_scope.$const(param === null || param === void 0 ? void 0 : param.name, err);
                     return evaluate(node.handler, new_scope);
@@ -881,7 +887,7 @@
         },
         _b[SwitchStatement] = function (node, scope) {
             var discriminant = evaluate(node.discriminant, scope);
-            var new_scope = new Scope('switch', scope);
+            var new_scope = new Scope("switch" /* ScopeType.Switch */, scope);
             var matched = false;
             for (var _i = 0, _a = node.cases; _i < _a.length; _i++) {
                 var $case = _a[_i];
@@ -912,7 +918,7 @@
         },
         _b[WhileStatement] = function (node, scope) {
             while (evaluate(node.test, scope)) {
-                var new_scope = new Scope('loop', scope);
+                var new_scope = new Scope("loop" /* ScopeType.Loop */, scope);
                 new_scope.invasive = true;
                 var result = evaluate(node.body, new_scope);
                 if (isBreakResult(result)) {
@@ -928,7 +934,7 @@
         },
         _b[DoWhileStatement] = function (node, scope) {
             do {
-                var new_scope = new Scope('loop', scope);
+                var new_scope = new Scope("loop" /* ScopeType.Loop */, scope);
                 new_scope.invasive = true;
                 var result = evaluate(node.body, new_scope);
                 if (result === BREAK_SIGNAL) {
@@ -950,7 +956,7 @@
             var kind = node.left.kind;
             var id = kind ? node.left.declarations[0].id : node.left;
             var forInit = function (value) {
-                var new_scope = new Scope('loop', scope);
+                var new_scope = new Scope("loop" /* ScopeType.Loop */, scope);
                 new_scope.invasive = true;
                 if (id.type === Identifier) {
                     var name_9 = id.name;
@@ -4037,7 +4043,7 @@
             this.traceStack = [];
             this.currentNode = null;
             this.ast = null;
-            this.mainScope = new Scope('block');
+            this.mainScope = new Scope("program" /* ScopeType.Program */);
         }
         /** 错误收集中心 */
         Runner.prototype.onError = function (err) {
@@ -4060,14 +4066,14 @@
         Runner.prototype.initScope = function (injectObject) {
             var _this = this;
             var exports = {};
-            this.mainScope = new Scope('block');
-            this.mainScope.$const('exports', exports);
-            this.mainScope.$const('this', this);
+            this.mainScope = new Scope("program" /* ScopeType.Program */);
+            this.mainScope.$var('exports', exports);
+            this.mainScope.$const(THIS, this);
             Object.keys(default_api).forEach(function (name) {
-                _this.mainScope.$const(name, default_api[name]);
+                _this.mainScope.$var(name, default_api[name]);
             });
             Object.keys(injectObject).forEach(function (name) {
-                _this.mainScope.$const(name, injectObject[name]);
+                _this.mainScope.$var(name, injectObject[name]);
             });
         };
         Runner.prototype.parserAst = function (code) {

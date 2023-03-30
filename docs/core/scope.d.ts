@@ -27,19 +27,30 @@ export declare class GeneratorStack {
     popStack(): void;
     saveStackData(key: string, value: any): void;
 }
+export declare const enum ScopeType {
+    Program = "program",
+    Function = "function",
+    Block = "block",
+    Loop = "loop",
+    Switch = "switch"
+}
 export declare class Scope {
-    type: any;
+    type: ScopeType;
     parent: Scope | null;
     content: Record<string, any>;
     prefix: string;
     invasive: boolean;
     generator: boolean;
     generatorStack: GeneratorStack;
-    constructor(type: string, parent?: Scope, generator?: boolean);
+    constructor(type: ScopeType, parent?: Scope, generator?: boolean);
     $find(raw_name: string): any;
     $let(raw_name: string, value: any): boolean;
     $const(raw_name: string, value: unknown): boolean;
-    $var(raw_name: string, value: (...args: any[]) => any): boolean;
+    $var(raw_name: string, value: any): boolean;
     $declar(kind: Kind, raw_name: any, value: any): boolean;
+    /**
+     * 获取最近的非函数作用域
+     */
+    getLastUnFunctionScope(): Scope;
 }
 export {};

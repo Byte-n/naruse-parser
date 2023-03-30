@@ -84,8 +84,16 @@ export class GeneratorStack {
     }
 }
 
+export const enum ScopeType {
+    Program = 'program',
+    Function = 'function',
+    Block = 'block',
+    Loop = 'loop',
+    Switch = 'switch',
+}
+
 export class Scope {
-    public type;
+    public type: ScopeType;
     public parent: Scope | null;
     public content: Record<string, any> = {};
     public prefix = '';
@@ -94,13 +102,11 @@ export class Scope {
     public generator: boolean;
     public generatorStack: GeneratorStack;
 
-    constructor(type: string, parent?: Scope, generator: boolean = false) {
+    constructor(type: ScopeType, parent?: Scope, generator: boolean = false) {
         this.type = type;
         this.parent = parent || null;
         this.generator = generator;
-        // if (generator) {
         this.generatorStack = new GeneratorStack();
-        // }
     }
 
     public $find(raw_name: string): any {
@@ -131,14 +137,9 @@ export class Scope {
         } return false;
     }
 
-    public $var(raw_name: string, value: (...args: any[]) => any) {
+    public $var(raw_name: string, value: any) {
         const name = this.prefix + raw_name;
-        let scope: Scope = this;
-
-        while (scope.parent !== null && scope.type !== 'function') {
-            scope = scope.parent;
-        }
-
+        const scope: Scope = this.getLastUnFunctionScope();
         const $var = scope.content[name];
         if (!$var) {
             this.content[name] = new ScopeVar('var', value);
@@ -155,5 +156,15 @@ export class Scope {
             let: () => this.$let(raw_name, value),
             const: () => this.$const(raw_name, value),
         })[kind]();
+    }
+    /**
+     * 获取最近的非函数作用域
+     */
+    public getLastUnFunctionScope() {
+        let scope: Scope = this;
+        while (scope.parent !== null && scope.type !== ScopeType.Function) {
+            scope = scope.parent;
+        }
+        return scope;
     }
 }

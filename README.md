@@ -22,6 +22,10 @@ gzip后只有18kb，基于 TypeScript 编写的 JavaScript 解释器，运行于
 +  学习研究使用。
 +  ES5 环境不需要编译直接执行 ES6 代码。（部分支持）
 
+## 使用限制
++ 与原生 JS 解释器相比，针对 var 变量并不会进行全局变量提升
++ 固定为严格模式，不允许未经声明使用变量
+
 ## 安装
 
 ```shell
@@ -92,8 +96,10 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.6
++ #EAT: 优化了部分代码 & 外部注入变量更改为 Var 赋值类型，允许内部进行修改
 #### 0.1.5
-#FIX: 修复了在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题 [issue](https://github.com/narusejs/naruse-parser/issues/7)
++ #FIX: 修复了在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题 [issue](https://github.com/narusejs/naruse-parser/issues/7)
 #### 0.1.4
 + #FIX: 修复了在 ForIn 与 ForOf 中不允许提前声明变量的问题 & 数组解构不能直接赋值 [issue](https://github.com/narusejs/naruse-parser/issues/8)
 #### 0.1.3

@@ -127,4 +127,18 @@ describe('声明变量', () => {
         } = exports;
         expect(a).to.equal('2');
     });
+
+    it('提前函数使用后面声明的变量', () => {
+        const exports = run(`
+        function a() {
+            return b;
+        }
+        var b = 1;
+        exports.a = a();
+        `);
+        const {
+            a,
+        } = exports;
+        expect(a).to.equal(1);
+    });
 });

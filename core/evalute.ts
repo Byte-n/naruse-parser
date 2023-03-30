@@ -64,8 +64,8 @@ import {
     ImportExpression
 } from '../expressionType/index'
 import { createError, errorMessageList, EvaluateError } from './error';
-import { BREAK_SIGNAL, CONTINUE_SIGNAL, RETURN_SIGNAL, YIELD_SIGNAL, isGeneratorFunction, isYieldResult, isReturnResult, isContinueResult, isBreakResult, isPromoteStatement, isVarPromoteStatement } from './signal';
-import { Scope, Kind, indexGeneratorStackDecorate } from './scope';
+import { BREAK_SIGNAL, CONTINUE_SIGNAL, RETURN_SIGNAL, YIELD_SIGNAL, isGeneratorFunction, isYieldResult, isReturnResult, isContinueResult, isBreakResult, isPromoteStatement, isVarPromoteStatement, THIS } from './signal';
+import { Scope, Kind, indexGeneratorStackDecorate, ScopeType } from './scope';
 
 let anonymousId = 0;
 let thisRunner: { source: string, currentNode: any, traceId: number, traceStack: any[], onError?: (err: EvaluateError) => void };
@@ -139,9 +139,9 @@ const evaluate_map: baseMap = {
     },
     [BlockStatement]: (block: estree.BlockStatement, scope: Scope) => {
         return indexGeneratorStackDecorate((stackData) => {
-            const new_scope = scope.invasive ? scope : new Scope('block', scope);
+            const new_scope = scope.invasive ? scope : new Scope(ScopeType.Block, scope);
             const list = block.body;
-            // 非 function 声明语句
+            // 提炼语句需要提升到父级作用域
             const nonFunctionList = refinePromteStatements(list, new_scope);
             for (; stackData.index < nonFunctionList.length; stackData.index++) {
                 const node = nonFunctionList[stackData.index];
@@ -175,7 +175,7 @@ const evaluate_map: baseMap = {
     },
     [ForStatement]: function (node: estree.ForStatement, scope: Scope) {
         for (
-            const new_scope = new Scope('loop', scope),
+            const new_scope = new Scope(ScopeType.Loop, scope),
             // 只有 var 变量才会被提高到上一作用域
             init_val = node.init ? evaluate(node.init, isVarPromoteStatement(node.init) ? scope : new_scope) : null;
             node.test ? evaluate(node.test, new_scope) : true;
@@ -267,7 +267,7 @@ const evaluate_map: baseMap = {
         }
     },
     [ThisExpression]: function (node: estree.ThisExpression, scope: Scope) {
-        const this_val = scope.$find('this');
+        const this_val = scope.$find(THIS);
         return this_val ? this_val.$get() : null;
     },
     [ArrayExpression]: function (node: estree.ArrayExpression, scope: Scope) {
@@ -304,7 +304,7 @@ const evaluate_map: baseMap = {
         const { name: func_name } = node.id || { name: `anonymous${anonymousId++}` };
         if (node.generator) {
             func = function (this: any, ...args: any[]) {
-                const new_scope = new Scope('function', scope, true);
+                const new_scope = new Scope(ScopeType.Function, scope, true);
                 new_scope.invasive = true;
                 node.params.forEach((param, index) => {
                     if (param.type === Identifier) {
@@ -314,7 +314,7 @@ const evaluate_map: baseMap = {
                         evaluate_map[param.type](param, new_scope, 'var', args[index]);
                     }
                 })
-                new_scope.$const('this', this);
+                new_scope.$const(THIS, this);
                 new_scope.$const('arguments', arguments);
                 new_scope.$var(func_name, func);
                 let completed = false;
@@ -334,7 +334,7 @@ const evaluate_map: baseMap = {
             }
         } else {
             func = function (this: any, ...args: any[]) {
-                const new_scope = new Scope('function', scope);
+                const new_scope = new Scope(ScopeType.Function, scope);
                 new_scope.invasive = true;
                 node.params.forEach((param, index) => {
                     if (param.type === Identifier) {
@@ -346,14 +346,14 @@ const evaluate_map: baseMap = {
                 })
                 let result;
                 if (isArrowFunction) {
-                    const parent_scope = scope.$find('this').$get();
-                    new_scope.$const('this', parent_scope ? parent_scope : null);
+                    const parent_scope = scope.$find(THIS).$get();
+                    new_scope.$const(THIS, parent_scope ? parent_scope : null);
                     result = evaluate(node.body, new_scope);
                     if (node.body.type !== BlockStatement) {
                         return result;
                     }
                 } else {
-                    new_scope.$const('this', this);
+                    new_scope.$const(THIS, this);
                     new_scope.$const('arguments', arguments);
                     // fix: 修复在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题
                     new_scope.$var(func_name, func);
@@ -395,7 +395,7 @@ const evaluate_map: baseMap = {
                         return delete evaluate(object, scope)[(property).name]
                     }
                 } else if (node.argument.type === Identifier) {
-                    const $this = scope.$find('this')
+                    const $this = scope.$find(THIS)
                     // @ts-ignore
                     if ($this) return $this.$get()[node.argument.name]
                 }
@@ -545,7 +545,7 @@ const evaluate_map: baseMap = {
             if (isUndefinedOrNull(this_val)) throw createError(errorMessageList.notHasSomeProperty, funcName, node, thisRunner.source);
             func = this_val[funcName];
         } else {
-            this_val = scope.$find('this').$get();
+            this_val = scope.$find(THIS).$get();
             func = evaluate(node.callee, scope);
         }
         if (typeof func !== 'function') throw createError(errorMessageList.notCallableFunction, func, node, thisRunner.source);
@@ -574,7 +574,7 @@ const evaluate_map: baseMap = {
         } catch (err) {
             if (node.handler) {
                 const { param } = node.handler
-                const new_scope = new Scope('block', scope)
+                const new_scope = new Scope(ScopeType.Block, scope)
                 new_scope.invasive = true
                 new_scope.$const(param?.name, err)
                 return evaluate(node.handler, new_scope)
@@ -591,7 +591,7 @@ const evaluate_map: baseMap = {
     },
     [SwitchStatement]: function (node: estree.SwitchStatement, scope: Scope) {
         const discriminant = evaluate(node.discriminant, scope)
-        const new_scope = new Scope('switch', scope)
+        const new_scope = new Scope(ScopeType.Switch, scope)
 
         let matched = false
 
@@ -620,7 +620,7 @@ const evaluate_map: baseMap = {
     },
     [WhileStatement]: function (node: estree.WhileStatement, scope: Scope) {
         while (evaluate(node.test, scope)) {
-            const new_scope = new Scope('loop', scope)
+            const new_scope = new Scope(ScopeType.Loop, scope)
             new_scope.invasive = true
             const result = evaluate(node.body, new_scope)
 
@@ -631,7 +631,7 @@ const evaluate_map: baseMap = {
     },
     [DoWhileStatement]: function (node: estree.DoWhileStatement, scope: Scope) {
         do {
-            const new_scope = new Scope('loop', scope)
+            const new_scope = new Scope(ScopeType.Loop, scope)
             new_scope.invasive = true
             const result = evaluate(node.body, new_scope)
             if (result === BREAK_SIGNAL) { break }
@@ -647,7 +647,7 @@ const evaluate_map: baseMap = {
         const id = kind ? (<estree.VariableDeclaration>node.left).declarations[0].id : node.left;
 
         const forInit = (value: any) => {
-            const new_scope = new Scope('loop', scope)
+            const new_scope = new Scope(ScopeType.Loop, scope)
             new_scope.invasive = true
             if (id.type === Identifier) {
                 const name = (<estree.Identifier>id).name

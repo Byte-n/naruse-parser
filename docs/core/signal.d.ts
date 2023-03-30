@@ -21,3 +21,4 @@ export declare const RETURN_SIGNAL: {
 export declare const YIELD_SIGNAL: {
     result: any;
 };
+export declare const THIS = "this";

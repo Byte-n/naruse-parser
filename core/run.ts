@@ -1,6 +1,7 @@
 import { evaluate } from "./evalute";
 import acorn from '../acorn/index'
-import { Scope } from "./scope";
+import { Scope, ScopeType } from "./scope";
+import { THIS } from "./signal";
 
 type InJectObject = Record<string, any>;
 
@@ -49,7 +50,7 @@ export class Runner {
     public currentNode: any = null;
 
     private ast = null;
-    private mainScope: Scope = new Scope('block');
+    private mainScope: Scope = new Scope(ScopeType.Program);
 
     /** 错误收集中心 */
     public onError (err: Error) {
@@ -71,14 +72,14 @@ export class Runner {
 
     public initScope (injectObject: InJectObject) {
         const exports = {};
-        this.mainScope = new Scope('block');
-        this.mainScope.$const('exports', exports);
-        this.mainScope.$const('this', this);
+        this.mainScope = new Scope(ScopeType.Program);
+        this.mainScope.$var('exports', exports);
+        this.mainScope.$const(THIS, this);
         Object.keys(default_api).forEach((name) => {
-            this.mainScope.$const(name, default_api[name]);
+            this.mainScope.$var(name, default_api[name]);
         })
         Object.keys(injectObject).forEach((name) => {
-            this.mainScope.$const(name, injectObject[name]);
+            this.mainScope.$var(name, injectObject[name]);
         })
     }
 

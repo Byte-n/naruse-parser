@@ -31,3 +31,5 @@ export const BREAK_SIGNAL = {};
 export const CONTINUE_SIGNAL = {};
 export const RETURN_SIGNAL = { result: undefined };
 export const YIELD_SIGNAL = { result: undefined };
+
+export const THIS = 'this';
