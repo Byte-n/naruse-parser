@@ -96,8 +96,10 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.9
++ #FIX: 修复了当函数中出现与函数名相同的的形参时会导致形参会取到当前函数 [issue](https://github.com/narusejs/naruse-parser/issues/10)
 #### 0.1.8
-+ #FIX: 修复了函数中使用 try finally 后返回值默认为 undefined
++ #FIX: 修复了函数中使用 try finally 后返回值默认为 undefined [issue](https://github.com/narusejs/naruse-parser/issues/9)
 #### 0.1.7
 + #FIX: 修复当 var 定义的变量名与注入变量名相同时会取到为空
 #### 0.1.6

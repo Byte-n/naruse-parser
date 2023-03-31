@@ -133,4 +133,16 @@ describe('函数相关测试', () => {
     `);
         expect(func1.qwe).not.to.equal(undefined);
     })
+
+    it('当函数中出现与函数名相同的的形参时会导致形参会取到当前函数', () => {
+        const exports = run(`
+           function a (a) {
+              exports.a = a;
+           }
+           a();
+        `)
+        const { a } = exports;
+        expect(a).to.equal(undefined);
+    })
+
 });

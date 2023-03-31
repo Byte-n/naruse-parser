@@ -308,6 +308,9 @@ const evaluate_map: baseMap = {
             func = function (this: any, ...args: any[]) {
                 const new_scope = new Scope(ScopeType.Function, scope, true);
                 new_scope.invasive = true;
+                new_scope.$const(THIS, this);
+                new_scope.$const('arguments', arguments);
+                new_scope.$var(func_name, func);
                 node.params.forEach((param, index) => {
                     if (param.type === Identifier) {
                         const { name } = param as estree.Identifier;
@@ -316,9 +319,6 @@ const evaluate_map: baseMap = {
                         evaluate_map[param.type](param, new_scope, 'var', args[index]);
                     }
                 })
-                new_scope.$const(THIS, this);
-                new_scope.$const('arguments', arguments);
-                new_scope.$var(func_name, func);
                 let completed = false;
                 const next = (arg: any) => {
                     if (completed) return { value: undefined, done: true };
@@ -338,6 +338,9 @@ const evaluate_map: baseMap = {
             func = function (this: any, ...args: any[]) {
                 const new_scope = new Scope(ScopeType.Function, scope);
                 new_scope.invasive = true;
+                // fix: 修复在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题
+                // fix: 修复了当函数中出现与函数名相同的的形参时会导致形参会取到当前函数
+                new_scope.$var(func_name, func);
                 node.params.forEach((param, index) => {
                     if (param.type === Identifier) {
                         const { name } = param as estree.Identifier;
@@ -357,8 +360,6 @@ const evaluate_map: baseMap = {
                 } else {
                     new_scope.$const(THIS, this);
                     new_scope.$const('arguments', arguments);
-                    // fix: 修复在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题
-                    new_scope.$var(func_name, func);
                     result = evaluate(node.body, new_scope);
                 }
                 if (result === RETURN_SIGNAL) {
