@@ -584,8 +584,11 @@ const evaluate_map: baseMap = {
                 throw err
             }
         } finally {
-            if (node.finalizer)
-                return evaluate(node.finalizer, scope)
+            // fix: 当 finally 中存在 return 时 会覆盖 try 里的返回值，导致返回值错误
+            if (node.finalizer) {
+                const res = evaluate(node.finalizer, scope);
+                if (isReturnResult(res)) return res;
+            }
         }
     },
     [CatchClause]: function (node: estree.CatchClause, scope: Scope): any {
