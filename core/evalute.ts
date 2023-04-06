@@ -310,7 +310,7 @@ const evaluate_map: baseMap = {
                 new_scope.invasive = true;
                 new_scope.$const(THIS, this);
                 new_scope.$const('arguments', arguments);
-                new_scope.$var(func_name, func);
+                scope.$var(func_name, func);
                 node.params.forEach((param, index) => {
                     if (param.type === Identifier) {
                         const { name } = param as estree.Identifier;
@@ -340,7 +340,7 @@ const evaluate_map: baseMap = {
                 new_scope.invasive = true;
                 // fix: 修复在非 block 作用域中使用函数名调用函数时，函数名指向错误的问题
                 // fix: 修复了当函数中出现与函数名相同的的形参时会导致形参会取到当前函数
-                new_scope.$var(func_name, func);
+                scope.$var(func_name, func);
                 node.params.forEach((param, index) => {
                     if (param.type === Identifier) {
                         const { name } = param as estree.Identifier;

@@ -145,4 +145,40 @@ describe('函数相关测试', () => {
         expect(a).to.equal(undefined);
     })
 
+
+    it('当函数内使用 const 创建新的与函数名相同的变量时导致重复定义错误', () => {
+        const exports = run(`
+           function a () {
+              const a = 1234;
+              exports.a = a;
+           }
+           a();
+        `)
+        const { a } = exports;
+        expect(a).to.equal(1234);
+    });
+
+    it('当函数内使用 const 创建与形参相同的变量时应该报错', () => {
+        expect(() => {
+            const exports = run(`
+           function a (a) {
+              const a = 1234;
+              exports.a = a;
+           }
+           a();
+        `)
+        }).to.throw();
+    })
+
+    it('函数内获取当前函数名变量默认为当前函数', () => {
+        const exports = run(`
+           function a () {
+              exports.a = a;
+           }
+           a();
+           exports.b = a;
+        `)
+        const { a, b } = exports;
+        expect(a).to.equal(b);
+    })
 });
