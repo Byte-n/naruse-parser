@@ -181,4 +181,18 @@ describe('函数相关测试', () => {
         const { a, b } = exports;
         expect(a).to.equal(b);
     })
+
+    it('函数内获取当前函数名变量默认为当前函数', () => {
+        const exports = run(`
+            const cc =  function qwer () { exports.qwer = qwer }; 
+            var qwer =123;
+            exports.a = qwer;
+            cc();
+            exports.b = qwer;
+        `)
+        const { a, b, qwer } = exports;
+        expect(a).to.equal(123);
+        expect(b).to.equal(123);
+        expect(qwer).to.not.equal(123);
+    })
 });

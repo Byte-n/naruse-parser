@@ -1,5 +1,5 @@
 import { evaluate } from "./evalute";
-import acorn from '../acorn/index'
+import { getNewAcorn } from '../acorn/index'
 import { Scope, ScopeType } from "./scope";
 import { THIS } from "./signal";
 
@@ -84,7 +84,7 @@ export class Runner {
     }
 
     public parserAst (code: string) {
-        this.ast = acorn.parse(code, { locations: true, ecmaVersion: 6 });
+        this.ast = getNewAcorn().parse(code, { locations: true, ecmaVersion: 6 });
         return this.ast;
     }
 }

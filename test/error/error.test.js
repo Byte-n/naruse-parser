@@ -37,6 +37,7 @@ describe('错误收集测试', () => {
             }
         }).to.throw();
     });
+        
 
     // it('onError 异步错误收集', async (done) => {
     //     const onError = (error) => {

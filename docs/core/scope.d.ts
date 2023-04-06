@@ -2,7 +2,8 @@ export declare type Kind = 'const' | 'var' | 'let';
 export declare class ScopeVar {
     value: any;
     kind: Kind;
-    constructor(kind: Kind, value: any);
+    reDeclare: boolean;
+    constructor(kind: Kind, value: any, reDeclare?: boolean);
     $set(value: any): boolean;
     $get(): any;
 }
@@ -46,8 +47,8 @@ export declare class Scope {
     $find(raw_name: string): any;
     $let(raw_name: string, value: any): boolean;
     $const(raw_name: string, value: unknown): boolean;
-    $var(raw_name: string, value: any): boolean;
-    $declar(kind: Kind, raw_name: any, value: any): boolean;
+    $var(raw_name: string, value: any, canReDeclare?: boolean): boolean;
+    $declar(kind: Kind, raw_name: any, value: any, canReDeclare?: boolean): boolean;
     /**
      * 获取最近的函数作用域
      */

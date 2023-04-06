@@ -5,15 +5,18 @@ export type Kind = 'const' | 'var' | 'let';
 export class ScopeVar {
     public value: any;
     public kind: Kind;
-    constructor(kind: Kind, value: any) {
+    public reDeclare = false;
+    constructor(kind: Kind, value: any, reDeclare = false) {
         this.value = value;
         this.kind = kind;
+        this.reDeclare = reDeclare;
     }
     $set(value: any) {
-        if (this.kind === 'const') {
+        if (this.kind === 'const' && !this.reDeclare) {
             throw new Error('const value can not be changed');
         }
         this.value = value;
+        this.reDeclare = false;
         return true;
     }
     $get() {
@@ -128,21 +131,22 @@ export class Scope {
         } return false;
     }
 
-    public $const(raw_name: string, value: unknown) {
+    public $const(raw_name: string, value: unknown, ) {
         const name = this.prefix + raw_name;
         const $var = this.content[name];
-        if (!$var) {
+        if (!$var || ($var instanceof ScopeVar && $var.reDeclare)) {
             this.content[name] = new ScopeVar('const', value);
             return true;
-        } return false;
+        }
+        return false;
     }
 
-    public $var(raw_name: string, value: any) {
+    public $var(raw_name: string, value: any, canReDeclare: boolean = false) {
         const name = this.prefix + raw_name;
         const scope: Scope = this.getLastUnFunctionScope();
         const $var = scope.content[name];
         if (!$var) {
-            this.content[name] = new ScopeVar('var', value);
+            this.content[name] = new ScopeVar('var', value, canReDeclare);
             return true;
             // #fix var 不允许重复声明
         } else if ($var instanceof ScopeVar) {
@@ -151,9 +155,9 @@ export class Scope {
         }
         return false;
     }
-    public $declar(kind: Kind, raw_name: any, value: any) {
+    public $declar(kind: Kind, raw_name: any, value: any, canReDeclare: boolean = false) {
         return ({
-            var: () => this.$var(raw_name, value),
+            var: () => this.$var(raw_name, value, canReDeclare),
             let: () => this.$let(raw_name, value),
             const: () => this.$const(raw_name, value),
         })[kind]();
