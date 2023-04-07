@@ -63,7 +63,7 @@ export class Runner {
         this.initScope(injectObject);
         this.parserAst(code);
         try {
-            evaluate(this.ast, this.mainScope, this);
+            evaluate(this.ast, this.mainScope);
         } catch (err) {
             throw err;
         }
@@ -81,6 +81,7 @@ export class Runner {
         Object.keys(injectObject).forEach((name) => {
             this.mainScope.$var(name, injectObject[name]);
         })
+        this.mainScope.runner = this;
     }
 
     public parserAst (code: string) {

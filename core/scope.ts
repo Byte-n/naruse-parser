@@ -1,3 +1,4 @@
+import type { Runner } from "./run";
 import { isGeneratorFunction, isYieldResult } from "./signal";
 
 export type Kind = 'const' | 'var' | 'let';
@@ -105,6 +106,9 @@ export class Scope {
     public generator: boolean;
     public generatorStack: GeneratorStack;
 
+    /** 在顶层绑定运行的 runner */
+    public runner?: Runner;
+
     constructor(type: ScopeType, parent?: Scope, generator: boolean = false) {
         this.type = type;
         this.parent = parent || null;
@@ -143,7 +147,7 @@ export class Scope {
 
     public $var(raw_name: string, value: any, canReDeclare: boolean = false) {
         const name = this.prefix + raw_name;
-        const scope: Scope = this.getLastUnFunctionScope();
+        const scope: Scope = this.getClosetSomeScope(ScopeType.Function);
         const $var = scope.content[name];
         if (!$var) {
             this.content[name] = new ScopeVar('var', value, canReDeclare);
@@ -163,13 +167,20 @@ export class Scope {
         })[kind]();
     }
     /**
-     * 获取最近的函数作用域
+     * 获取最近的某种类型作用域
      */
-    public getLastUnFunctionScope() {
+    public getClosetSomeScope(type: ScopeType) {
         let scope: Scope = this;
-        while (scope.parent !== null && scope.type !== ScopeType.Function) {
+        while (scope.parent !== null && scope.type !== type) {
             scope = scope.parent;
         }
         return scope;
     }
+}
+
+/**
+ * 获取当前顶层作用域的 runner
+ */
+export const getScopeRunner = (scope: Scope) => {
+    return scope.getClosetSomeScope(ScopeType.Program).runner;
 }

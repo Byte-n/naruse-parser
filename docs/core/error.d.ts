@@ -1,3 +1,4 @@
+import { Scope } from "./scope";
 export declare class EvaluateError extends Error {
     isEvaluateError: boolean;
     nodeLoc?: {
@@ -25,5 +26,5 @@ declare type ErrorMessageList = [
     new (msg: string) => EvaluateError
 ];
 export declare const errorMessageList: Record<string, ErrorMessageList>;
-export declare const createError: (msg: ErrorMessageList, value: any, node?: any, source?: string) => EvaluateError;
+export declare const createError: (msg: ErrorMessageList, value: any, node?: any, scope?: Scope) => EvaluateError;
 export {};

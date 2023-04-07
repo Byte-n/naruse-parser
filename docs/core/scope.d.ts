@@ -1,3 +1,4 @@
+import type { Runner } from "./run";
 export declare type Kind = 'const' | 'var' | 'let';
 export declare class ScopeVar {
     value: any;
@@ -43,6 +44,8 @@ export declare class Scope {
     invasive: boolean;
     generator: boolean;
     generatorStack: GeneratorStack;
+    /** 在顶层绑定运行的 runner */
+    runner?: Runner;
     constructor(type: ScopeType, parent?: Scope, generator?: boolean);
     $find(raw_name: string): any;
     $let(raw_name: string, value: any): boolean;
@@ -50,8 +53,12 @@ export declare class Scope {
     $var(raw_name: string, value: any, canReDeclare?: boolean): boolean;
     $declar(kind: Kind, raw_name: any, value: any, canReDeclare?: boolean): boolean;
     /**
-     * 获取最近的函数作用域
+     * 获取最近的某种类型作用域
      */
-    getLastUnFunctionScope(): Scope;
+    getClosetSomeScope(type: ScopeType): Scope;
 }
+/**
+ * 获取当前顶层作用域的 runner
+ */
+export declare const getScopeRunner: (scope: Scope) => Runner;
 export {};

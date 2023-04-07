@@ -1,3 +1,5 @@
+import { Scope, getScopeRunner } from "./scope";
+
 export class EvaluateError extends Error {
     public isEvaluateError = true;
     public nodeLoc?: { start: number; end: number, loc: { start: { line: number; column: number }; end: { line: number; column: number } } };
@@ -25,7 +27,8 @@ export const errorMessageList: Record<string, ErrorMessageList> = {
     notGeneratorFunction: [1009, "无法在非迭代函数内使用yield: %0", EvaluateReferenceError],
 }
 
-export const createError = (msg: ErrorMessageList, value: any, node?: any, source?: string) => {
+export const createError = (msg: ErrorMessageList, value: any, node?: any, scope?: Scope) => {
+    const source = getScopeRunner(scope)?.source;
     let message = msg[1].replace("%0", String(value));
     if (node && source) {
         const errorNodeLoc = node.loc;

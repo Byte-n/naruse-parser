@@ -108,56 +108,6 @@
     var ConditionalExpression = "ConditionalExpression";
     var ImportExpression = "ImportExpression";
 
-    var EvaluateError = /** @class */ (function (_super) {
-        __extends(EvaluateError, _super);
-        function EvaluateError() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.isEvaluateError = true;
-            return _this;
-        }
-        return EvaluateError;
-    }(Error));
-    /** @class */ ((function (_super) {
-        __extends(EvaluateSyntaxError, _super);
-        function EvaluateSyntaxError() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return EvaluateSyntaxError;
-    })(EvaluateError));
-    var EvaluateReferenceError = /** @class */ (function (_super) {
-        __extends(EvaluateReferenceError, _super);
-        function EvaluateReferenceError() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return EvaluateReferenceError;
-    }(EvaluateError));
-    var errorMessageList = {
-        notYetDefined: [1000, "未定义的变量: %0", EvaluateReferenceError],
-        duplicateDefinition: [1001, "变量重复定义: %0", EvaluateReferenceError],
-        notCallableFunction: [1002, "不是可调用的函数: %0", EvaluateReferenceError],
-        notSupportNode: [1003, "尚未支持的node类型: %0", EvaluateError],
-        notHasSomeProperty: [1004, "对象不存在对应属性: %0", EvaluateReferenceError],
-        runTimeError: [1005, "运行错误 %0", EvaluateError],
-        deconstructNotArray: [1006, "解构应为一个数组: %0", EvaluateReferenceError],
-        deconstructNotObject: [1007, "解构应为一个对象: %0", EvaluateReferenceError],
-        notHasImport: [1008, "未初始化函数: %0", EvaluateReferenceError],
-        notGeneratorFunction: [1009, "无法在非迭代函数内使用yield: %0", EvaluateReferenceError],
-    };
-    var createError = function (msg, value, node, source) {
-        var message = msg[1].replace("%0", String(value));
-        if (node && source) {
-            var errorNodeLoc = node.loc;
-            var errorCode = source.slice(node.start, node.end);
-            var errorMsg = "\u9519\u8BEF\u4EE3\u7801: ".concat(errorCode);
-            if (errorNodeLoc) {
-                errorMsg += " [".concat(errorNodeLoc.start.line, ":").concat(errorNodeLoc.start.column, "-").concat(errorNodeLoc.end.line, ":").concat(errorNodeLoc.end.column, "]");
-            }
-            message = "".concat(message, " \n ").concat(errorMsg);
-        }
-        var err = new msg[2](message);
-        return err.nodeLoc = node, err;
-    };
-
     // 当前执行作用域是否在迭代函数下
     var isGeneratorFunction = function (scope) { return scope.generator; };
     var isYieldResult = function (scope, value) { return isGeneratorFunction(scope) && value === YIELD_SIGNAL; };
@@ -300,7 +250,7 @@
         Scope.prototype.$var = function (raw_name, value, canReDeclare) {
             if (canReDeclare === void 0) { canReDeclare = false; }
             var name = this.prefix + raw_name;
-            var scope = this.getLastUnFunctionScope();
+            var scope = this.getClosetSomeScope("function" /* ScopeType.Function */);
             var $var = scope.content[name];
             if (!$var) {
                 this.content[name] = new ScopeVar('var', value, canReDeclare);
@@ -323,21 +273,78 @@
             })[kind]();
         };
         /**
-         * 获取最近的函数作用域
+         * 获取最近的某种类型作用域
          */
-        Scope.prototype.getLastUnFunctionScope = function () {
+        Scope.prototype.getClosetSomeScope = function (type) {
             var scope = this;
-            while (scope.parent !== null && scope.type !== "function" /* ScopeType.Function */) {
+            while (scope.parent !== null && scope.type !== type) {
                 scope = scope.parent;
             }
             return scope;
         };
         return Scope;
     }());
+    /**
+     * 获取当前顶层作用域的 runner
+     */
+    var getScopeRunner = function (scope) {
+        return scope.getClosetSomeScope("program" /* ScopeType.Program */).runner;
+    };
+
+    var EvaluateError = /** @class */ (function (_super) {
+        __extends(EvaluateError, _super);
+        function EvaluateError() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.isEvaluateError = true;
+            return _this;
+        }
+        return EvaluateError;
+    }(Error));
+    /** @class */ ((function (_super) {
+        __extends(EvaluateSyntaxError, _super);
+        function EvaluateSyntaxError() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return EvaluateSyntaxError;
+    })(EvaluateError));
+    var EvaluateReferenceError = /** @class */ (function (_super) {
+        __extends(EvaluateReferenceError, _super);
+        function EvaluateReferenceError() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return EvaluateReferenceError;
+    }(EvaluateError));
+    var errorMessageList = {
+        notYetDefined: [1000, "未定义的变量: %0", EvaluateReferenceError],
+        duplicateDefinition: [1001, "变量重复定义: %0", EvaluateReferenceError],
+        notCallableFunction: [1002, "不是可调用的函数: %0", EvaluateReferenceError],
+        notSupportNode: [1003, "尚未支持的node类型: %0", EvaluateError],
+        notHasSomeProperty: [1004, "对象不存在对应属性: %0", EvaluateReferenceError],
+        runTimeError: [1005, "运行错误 %0", EvaluateError],
+        deconstructNotArray: [1006, "解构应为一个数组: %0", EvaluateReferenceError],
+        deconstructNotObject: [1007, "解构应为一个对象: %0", EvaluateReferenceError],
+        notHasImport: [1008, "未初始化函数: %0", EvaluateReferenceError],
+        notGeneratorFunction: [1009, "无法在非迭代函数内使用yield: %0", EvaluateReferenceError],
+    };
+    var createError = function (msg, value, node, scope) {
+        var _a;
+        var source = (_a = getScopeRunner(scope)) === null || _a === void 0 ? void 0 : _a.source;
+        var message = msg[1].replace("%0", String(value));
+        if (node && source) {
+            var errorNodeLoc = node.loc;
+            var errorCode = source.slice(node.start, node.end);
+            var errorMsg = "\u9519\u8BEF\u4EE3\u7801: ".concat(errorCode);
+            if (errorNodeLoc) {
+                errorMsg += " [".concat(errorNodeLoc.start.line, ":").concat(errorNodeLoc.start.column, "-").concat(errorNodeLoc.end.line, ":").concat(errorNodeLoc.end.column, "]");
+            }
+            message = "".concat(message, " \n ").concat(errorMsg);
+        }
+        var err = new msg[2](message);
+        return err.nodeLoc = node, err;
+    };
 
     var _a, _b;
     var anonymousId = 0;
-    var thisRunner;
     var ObjectDefineProperty = Object.defineProperty;
     var illegalFun = [setTimeout, setInterval, clearInterval, clearTimeout];
     var isUndefinedOrNull = function (val) { return val === void 0 || val === null; };
@@ -394,7 +401,7 @@
             if ($var) {
                 return $var.$get();
             }
-            throw createError(errorMessageList.notYetDefined, node.name, node, thisRunner.source);
+            throw createError(errorMessageList.notYetDefined, node.name, node, scope);
         },
         _b[Literal] = function (node) {
             return node.value;
@@ -452,7 +459,7 @@
         _b[FunctionDeclaration] = function (node, scope) {
             var func = evaluate_map[FunctionExpression](node, scope);
             if (!scope.$var(func.name, func)) {
-                throw createError(errorMessageList.duplicateDefinition, func.name, node, thisRunner.source);
+                throw createError(errorMessageList.duplicateDefinition, func.name, node, scope);
             }
             return func;
         },
@@ -476,7 +483,7 @@
                         if (isVarPromote && scope.$find(name_1) !== null)
                             continue;
                         if (!scope.$declar(kind, name_1, value)) {
-                            throw createError(errorMessageList.duplicateDefinition, name_1, node, thisRunner.source);
+                            throw createError(errorMessageList.duplicateDefinition, name_1, node, scope);
                         }
                     }
                     else {
@@ -490,7 +497,7 @@
         _b[ArrayPattern] = function (node, scope, kind, value) {
             var elements = node.elements;
             if (!Array.isArray(value)) {
-                throw createError(errorMessageList.deconstructNotArray, value, node, thisRunner.source);
+                throw createError(errorMessageList.deconstructNotArray, value, node, scope);
             }
             elements.forEach(function (element, index) {
                 if (!element)
@@ -500,7 +507,7 @@
                     if (!kind)
                         kind = 'var';
                     if (!scope.$declar(kind, name_2, value[index])) {
-                        throw createError(errorMessageList.duplicateDefinition, name_2, node, thisRunner.source);
+                        throw createError(errorMessageList.duplicateDefinition, name_2, node, scope);
                     }
                 }
                 else {
@@ -517,7 +524,7 @@
                     if (value.type === Identifier) {
                         var name_3 = value.name;
                         if (!scope.$declar(kind, name_3, object[newKey])) {
-                            throw createError(errorMessageList.duplicateDefinition, name_3, node, thisRunner.source);
+                            throw createError(errorMessageList.duplicateDefinition, name_3, node, scope);
                         }
                     }
                     else {
@@ -532,7 +539,7 @@
             if (left.type === Identifier) {
                 var name_4 = left.name;
                 if (!scope.$declar(kind, name_4, value)) {
-                    throw createError(errorMessageList.duplicateDefinition, name_4, node, thisRunner.source);
+                    throw createError(errorMessageList.duplicateDefinition, name_4, node, scope);
                 }
             }
             else {
@@ -572,7 +579,7 @@
                     }
                 }
                 else {
-                    throw createError(errorMessageList.notSupportNode, property.type, node, thisRunner.source);
+                    throw createError(errorMessageList.notSupportNode, property.type, node, scope);
                 }
             }
             return object;
@@ -665,7 +672,7 @@
             // 矫正属性
             ObjectDefineProperty(func, "length", { value: node.params.length });
             // @ts-ignore
-            ObjectDefineProperty(func, "toString", { value: function () { return thisRunner.source.slice(node.start, node.end); }, configurable: true });
+            ObjectDefineProperty(func, "toString", { value: function () { return getScopeRunner(scope).source.slice(node.start, node.end); }, configurable: true });
             // 矫正name属性
             ObjectDefineProperty(func, "name", { value: func_name, configurable: true });
             return func;
@@ -718,7 +725,7 @@
                 var name_7 = node.argument.name;
                 $var = scope.$find(name_7);
                 if (!$var)
-                    throw createError(errorMessageList.notYetDefined, name_7, node, thisRunner.source);
+                    throw createError(errorMessageList.notYetDefined, name_7, node, scope);
             }
             else if (node.argument.type === MemberExpression) {
                 var argument = node.argument;
@@ -774,7 +781,7 @@
                 var name_8 = left.name;
                 var $var_or_not = scope.$find(name_8);
                 if (!$var_or_not)
-                    throw createError(errorMessageList.notYetDefined, name_8, node, thisRunner.source);
+                    throw createError(errorMessageList.notYetDefined, name_8, node, scope);
                 $var = $var_or_not;
             }
             else if (left.type === MemberExpression) {
@@ -794,7 +801,7 @@
                 };
             }
             else {
-                throw createError(errorMessageList.notSupportNode, left.type, node, thisRunner.source);
+                throw createError(errorMessageList.notSupportNode, left.type, node, scope);
             }
             return ({
                 '=': function (v) { return ($var.$set(v), v); },
@@ -841,7 +848,7 @@
                 // @ts-ignore
                 var funcName = !computed ? property.name : evaluate_map[property.type](property, scope);
                 if (isUndefinedOrNull(this_val))
-                    throw createError(errorMessageList.notHasSomeProperty, funcName, node, thisRunner.source);
+                    throw createError(errorMessageList.notHasSomeProperty, funcName, node, scope);
                 func = this_val[funcName];
             }
             else {
@@ -849,7 +856,7 @@
                 func = evaluate(node.callee, scope);
             }
             if (typeof func !== 'function')
-                throw createError(errorMessageList.notCallableFunction, func, node, thisRunner.source);
+                throw createError(errorMessageList.notCallableFunction, func, node, scope);
             // fix: setTimeout.apply({}, '');
             if (illegalFun.includes(func))
                 this_val = null;
@@ -1026,7 +1033,7 @@
             var source = evaluate(node.source, scope);
             var importer = scope.$find('$$import');
             if (!importer)
-                throw createError(errorMessageList.notHasImport, '$$import', node, thisRunner.source);
+                throw createError(errorMessageList.notHasImport, '$$import', node, scope);
             return importer.$get()(source);
         },
         _b[ForOfStatement] = function (node, scope) {
@@ -1035,7 +1042,7 @@
         _b[YieldExpression] = function (node, scope) {
             var _a;
             if (!isGeneratorFunction(scope))
-                throw createError(errorMessageList.notGeneratorFunction, '', node, thisRunner.source);
+                throw createError(errorMessageList.notGeneratorFunction, '', node, scope);
             var value = (_a = scope.generatorStack) === null || _a === void 0 ? void 0 : _a.getValue();
             if (value)
                 return value.value;
@@ -1046,32 +1053,30 @@
     var _evaluate = function (node, scope) {
         var func = evaluate_map[node.type];
         if (!func)
-            throw createError(errorMessageList.notSupportNode, node.type, node, thisRunner.source);
+            throw createError(errorMessageList.notSupportNode, node.type, node, scope);
         var res = evaluate_map[node.type](node, scope);
-        thisRunner.currentNode = node;
         return res;
     };
-    var evaluate = function (node, scope, runner) {
-        if (runner)
-            thisRunner = runner;
-        var thisId = thisRunner.traceId++;
-        thisRunner.traceStack.push(thisId);
+    var evaluate = function (node, scope) {
+        var runner = getScopeRunner(scope);
+        var thisId = runner.traceId++;
+        runner.traceStack.push(thisId);
         try {
             return _evaluate(node, scope);
         }
         catch (err) {
             // 错误已经冒泡到栈定了，触发错误收集处理
-            if (thisRunner.traceStack[0] === thisId) {
-                thisRunner.onError(err);
+            if (runner.traceStack[0] === thisId) {
+                runner.onError(err);
             }
             // 错误已经处理过了，直接抛出
             if (err.isEvaluateError) {
                 throw err;
             }
-            throw createError(errorMessageList.runTimeError, err === null || err === void 0 ? void 0 : err.message, node, thisRunner.source);
+            throw createError(errorMessageList.runTimeError, err === null || err === void 0 ? void 0 : err.message, node, scope);
         }
         finally {
-            thisRunner.traceStack.pop();
+            runner.traceStack.pop();
         }
     };
 
@@ -4074,7 +4079,7 @@
             this.initScope(injectObject);
             this.parserAst(code);
             try {
-                evaluate(this.ast, this.mainScope, this);
+                evaluate(this.ast, this.mainScope);
             }
             catch (err) {
                 throw err;
@@ -4093,6 +4098,7 @@
             Object.keys(injectObject).forEach(function (name) {
                 _this.mainScope.$var(name, injectObject[name]);
             });
+            this.mainScope.runner = this;
         };
         Runner.prototype.parserAst = function (code) {
             this.ast = getNewAcorn().parse(code, { locations: true, ecmaVersion: 6 });

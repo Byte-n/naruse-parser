@@ -65,10 +65,9 @@ import {
 } from '../expressionType/index'
 import { createError, errorMessageList, EvaluateError } from './error';
 import { BREAK_SIGNAL, CONTINUE_SIGNAL, RETURN_SIGNAL, YIELD_SIGNAL, isGeneratorFunction, isYieldResult, isReturnResult, isContinueResult, isBreakResult, isPromoteStatement, isVarPromoteStatement, THIS } from './signal';
-import { Scope, Kind, indexGeneratorStackDecorate, ScopeType } from './scope';
+import { Scope, Kind, indexGeneratorStackDecorate, ScopeType, getScopeRunner } from './scope';
 
 let anonymousId = 0;
-let thisRunner: { source: string, currentNode: any, traceId: number, traceStack: any[], onError?: (err: EvaluateError) => void };
 
 const ObjectDefineProperty = Object.defineProperty;
 
@@ -132,7 +131,7 @@ const evaluate_map: baseMap = {
         if ($var) {
             return $var.$get();
         }
-        throw createError(errorMessageList.notYetDefined, node.name, node, thisRunner.source);
+        throw createError(errorMessageList.notYetDefined, node.name, node, scope);
     },
     [Literal]: function (node: estree.Literal) {
         return node.value;
@@ -190,7 +189,7 @@ const evaluate_map: baseMap = {
     [FunctionDeclaration]: function (node: estree.FunctionDeclaration, scope: Scope) {
         const func = evaluate_map[FunctionExpression](node, scope);
         if (!scope.$var(func.name, func)) {
-            throw createError(errorMessageList.duplicateDefinition, func.name, node, thisRunner.source);
+            throw createError(errorMessageList.duplicateDefinition, func.name, node, scope);
         }
         return func;
     },
@@ -211,7 +210,7 @@ const evaluate_map: baseMap = {
                     // 如果作用域提升时变量已经存在，则不需要再次声明
                     if (isVarPromote && scope.$find(name) !== null) continue;
                     if (!scope.$declar(kind, name, value)) {
-                        throw createError(errorMessageList.duplicateDefinition, name, node, thisRunner.source);
+                        throw createError(errorMessageList.duplicateDefinition, name, node, scope);
                     }
                 } else {
                     const result = evaluate_map[id.type](id, scope, kind, value);
@@ -224,7 +223,7 @@ const evaluate_map: baseMap = {
     [ArrayPattern]: function (node: estree.ArrayPattern, scope: Scope, kind?: Kind, value?: any[]) {
         const { elements } = node;
         if (!Array.isArray(value)) {
-            throw createError(errorMessageList.deconstructNotArray, value, node, thisRunner.source);
+            throw createError(errorMessageList.deconstructNotArray, value, node, scope);
         }
         elements.forEach((element, index) => {
             if (!element) return;
@@ -232,7 +231,7 @@ const evaluate_map: baseMap = {
                 const { name } = element as estree.Identifier;
                 if (!kind) kind = 'var';
                 if (!scope.$declar(kind as Kind, name, value[index])) {
-                    throw createError(errorMessageList.duplicateDefinition, name, node, thisRunner.source);
+                    throw createError(errorMessageList.duplicateDefinition, name, node, scope);
                 }
             } else {
                 evaluate_map[element.type](element, scope, kind, value[index]);
@@ -248,7 +247,7 @@ const evaluate_map: baseMap = {
                 if (value.type === Identifier) {
                     const { name } = value as estree.Identifier;
                     if (!scope.$declar(kind as Kind, name, object[newKey])) {
-                        throw createError(errorMessageList.duplicateDefinition, name, node, thisRunner.source);
+                        throw createError(errorMessageList.duplicateDefinition, name, node, scope);
                     }
                 } else {
                     evaluate_map[value.type](value, scope, kind, object[newKey]);
@@ -262,7 +261,7 @@ const evaluate_map: baseMap = {
         if (left.type === Identifier) {
             const { name } = left as estree.Identifier;
             if (!scope.$declar(kind as Kind, name, value)) {
-                throw createError(errorMessageList.duplicateDefinition, name, node, thisRunner.source);
+                throw createError(errorMessageList.duplicateDefinition, name, node, scope);
             }
         } else {
             evaluate_map[left.type](left, scope, kind, value);
@@ -296,7 +295,7 @@ const evaluate_map: baseMap = {
                     ObjectDefineProperty(object, key, { get: value });
                 }
             } else {
-                throw createError(errorMessageList.notSupportNode, property.type, node, thisRunner.source);
+                throw createError(errorMessageList.notSupportNode, property.type, node, scope);
             }
         }
         return object;
@@ -375,7 +374,7 @@ const evaluate_map: baseMap = {
         // 矫正属性
         ObjectDefineProperty(func, "length", { value: node.params.length });
         // @ts-ignore
-        ObjectDefineProperty(func, "toString", { value: () => thisRunner.source.slice(node.start, node.end), configurable: true });
+        ObjectDefineProperty(func, "toString", { value: () => getScopeRunner(scope).source.slice(node.start, node.end), configurable: true });
         // 矫正name属性
         ObjectDefineProperty(func, "name", { value: func_name, configurable: true });
         return func;
@@ -421,7 +420,7 @@ const evaluate_map: baseMap = {
         if (node.argument.type === Identifier) {
             const { name } = node.argument;
             $var = scope.$find(name);
-            if (!$var) throw createError(errorMessageList.notYetDefined, name, node, thisRunner.source);
+            if (!$var) throw createError(errorMessageList.notYetDefined, name, node, scope);
         } else if (node.argument.type === MemberExpression) {
             const { argument } = node;
             const object = evaluate(argument.object, scope);
@@ -476,7 +475,7 @@ const evaluate_map: baseMap = {
         if (left.type === Identifier) {
             const { name } = left as unknown as estree.Identifier;
             const $var_or_not = scope.$find(name);
-            if (!$var_or_not) throw createError(errorMessageList.notYetDefined, name, node, thisRunner.source);
+            if (!$var_or_not) throw createError(errorMessageList.notYetDefined, name, node, scope);
             $var = $var_or_not;
         } else if (left.type === MemberExpression) {
             const { object, property, computed } = left as unknown as estree.MemberExpression;
@@ -494,7 +493,7 @@ const evaluate_map: baseMap = {
                 },
             };
         } else {
-            throw createError(errorMessageList.notSupportNode, left.type, node, thisRunner.source);
+            throw createError(errorMessageList.notSupportNode, left.type, node, scope);
         }
 
         return ({
@@ -545,13 +544,13 @@ const evaluate_map: baseMap = {
             this_val = evaluate(object, scope);
             // @ts-ignore
             const funcName = !computed ? property.name : evaluate_map[property.type](property, scope);
-            if (isUndefinedOrNull(this_val)) throw createError(errorMessageList.notHasSomeProperty, funcName, node, thisRunner.source);
+            if (isUndefinedOrNull(this_val)) throw createError(errorMessageList.notHasSomeProperty, funcName, node, scope);
             func = this_val[funcName];
         } else {
             this_val = scope.$find(THIS).$get();
             func = evaluate(node.callee, scope);
         }
-        if (typeof func !== 'function') throw createError(errorMessageList.notCallableFunction, func, node, thisRunner.source);
+        if (typeof func !== 'function') throw createError(errorMessageList.notCallableFunction, func, node, scope);
         // fix: setTimeout.apply({}, '');
         if (illegalFun.includes(func)) this_val = null;
         return func.apply(this_val, node.arguments.map(arg => evaluate(arg, scope)));
@@ -694,14 +693,14 @@ const evaluate_map: baseMap = {
     [ImportExpression]: function (node: estree.ImportExpression, scope: Scope) {
         const source = evaluate(node.source, scope)
         const importer = scope.$find('$$import');
-        if (!importer) throw createError(errorMessageList.notHasImport, '$$import', node, thisRunner.source);
+        if (!importer) throw createError(errorMessageList.notHasImport, '$$import', node, scope);
         return importer.$get()(source);
     },
     [ForOfStatement]: function (node: estree.ForOfStatement, scope: Scope) {
         return evaluate_map[ForInStatement](node, scope, true)
     },
     [YieldExpression]: function (node: estree.YieldExpression, scope: Scope) {
-        if (!isGeneratorFunction(scope)) throw createError(errorMessageList.notGeneratorFunction, '', node, thisRunner.source);
+        if (!isGeneratorFunction(scope)) throw createError(errorMessageList.notGeneratorFunction, '', node, scope);
         const value = scope.generatorStack?.getValue();
         if (value) return value.value;
         YIELD_SIGNAL.result = evaluate(node.argument, scope);
@@ -711,29 +710,28 @@ const evaluate_map: baseMap = {
 
 const _evaluate = (node: any, scope: Scope) => {
     const func = evaluate_map[node.type];
-    if (!func) throw createError(errorMessageList.notSupportNode, node.type, node, thisRunner.source);
+    if (!func) throw createError(errorMessageList.notSupportNode, node.type, node, scope);
     const res = evaluate_map[node.type](node, scope);
-    thisRunner.currentNode = node;
     return res;
 }
 
-export const evaluate = (node: any, scope: Scope, runner?: typeof thisRunner) => {
-    if (runner) thisRunner = runner;
-    const thisId = thisRunner.traceId++;
-    thisRunner.traceStack.push(thisId);
+export const evaluate = (node: any, scope: Scope) => {
+    const runner = getScopeRunner(scope);
+    const thisId = runner.traceId++;
+    runner.traceStack.push(thisId);
     try {
         return _evaluate(node, scope);
     } catch (err) {
         // 错误已经冒泡到栈定了，触发错误收集处理
-        if (thisRunner.traceStack[0] === thisId) {
-            thisRunner.onError(err);
+        if (runner.traceStack[0] === thisId) {
+            runner.onError(err);
         }
         // 错误已经处理过了，直接抛出
         if ((err as EvaluateError).isEvaluateError) {
             throw err;
         }
-        throw createError(errorMessageList.runTimeError, (err as Error)?.message, node, thisRunner.source)
+        throw createError(errorMessageList.runTimeError, (err as Error)?.message, node, scope)
     } finally {
-        thisRunner.traceStack.pop();
+        runner.traceStack.pop();
     }
 }
