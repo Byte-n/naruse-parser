@@ -96,6 +96,10 @@ declare const run: (code: string, injectObject: Record<string, any>, onError?: (
 - [ ] 加速ast解析
 
 ## History
+#### 0.1.12
++ #FIX: 修复多个 runner 同时运行时导致错误内容截取为最后一个执行片段的问题
+#### 0.1.11
++ #FIX: 修复了函数内使用 const 声明与函数名同名的变量时会出现错误 [issue](https://github.com/narusejs/naruse-parser/issues/12)
 #### 0.1.10
 + #FIX: 修复了函数内使用 const 声明与函数名同名的变量时会出现错误 [issue](https://github.com/narusejs/naruse-parser/issues/11)
 #### 0.1.9
