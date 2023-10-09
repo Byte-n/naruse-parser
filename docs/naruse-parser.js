@@ -4059,6 +4059,9 @@
         JSON: JSON,
         Promise: Promise,
     };
+    if (typeof Symbol !== 'undefined') {
+        default_api['Symbol'] = Symbol;
+    }
     var Runner = /** @class */ (function () {
         function Runner() {
             this.source = '';

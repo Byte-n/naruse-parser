@@ -41,7 +41,9 @@ const default_api: InJectObject = {
     Promise,
 };
 
-
+if (typeof Symbol !== 'undefined') {
+    default_api['Symbol'] = Symbol;
+}
 
 export class Runner {
     public source: string = '';
